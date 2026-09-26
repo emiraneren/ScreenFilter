@@ -136,8 +136,7 @@
             <ScrollViewer x:Name="BasicView" Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                 <StackPanel Margin="0,4,18,24">
                     <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="24,18,24,8" HorizontalAlignment="Left">
-                        <StackPanel Width="352">
-                            <TextBlock Text="{s:Loc view.basic.hint}" Style="{StaticResource Muted}" Margin="0,0,0,18"/>
+                        <StackPanel Width="352" Margin="0,6,0,0">
                             <StackPanel x:Name="BasicPanel"/>
                         </StackPanel>
                     </Border>
