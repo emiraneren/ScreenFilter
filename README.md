@@ -40,13 +40,13 @@ A small message appears at the top of the screen so you get feedback while in-ga
 
 ## Run / Çalıştırma
 
-Download the zip from **Releases**, extract and run `ScreenFilter.exe`. You need the [.NET 9 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/9.0) (runtime only, not the SDK). Windows 10 (2004+) / Windows 11.
+Download `ScreenFilter.exe` from **Releases** and run it. It is a single self-contained file, no .NET install needed. Windows 10 (2004+) / Windows 11.
 
-Build from source:
+Build from source (project is in the `source` folder):
 
 ```
-dotnet build -c Release
-dotnet publish -c Release -r win-x64 --self-contained false -o publish
+cd source
+dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o publish
 ```
 
 ## Notes / Notlar
