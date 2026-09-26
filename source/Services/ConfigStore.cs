@@ -14,7 +14,7 @@ public class AppConfig
     public string? LastPresetId { get; set; } = "default";
     public bool OnlyWhenForeground { get; set; } = true;
     public bool ExcludeFromCapture { get; set; } = true;
-    public bool MinimizeToTray { get; set; } = true;
+    public bool KeepInTrayOnClose { get; set; } = false;
     public FilterSettings Current { get; set; } = new();
     public List<Preset> CustomPresets { get; set; } = [];
 }

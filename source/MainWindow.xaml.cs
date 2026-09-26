@@ -48,7 +48,7 @@ public partial class MainWindow : Window
         (_cfg.Mode switch { CaptureMode.Fast => ModeFast, CaptureMode.Window => ModeWindow, _ => ModeMonitor }).IsChecked = true;
         OptForeground.IsChecked = _cfg.OnlyWhenForeground;
         OptExclude.IsChecked = _cfg.ExcludeFromCapture;
-        OptTray.IsChecked = _cfg.MinimizeToTray;
+        OptTray.IsChecked = _cfg.KeepInTrayOnClose;
         _suppress = false;
 
         BuildPresetChips();
@@ -433,7 +433,7 @@ public partial class MainWindow : Window
         if (_suppress) return;
         _cfg.OnlyWhenForeground = OptForeground.IsChecked == true;
         _cfg.ExcludeFromCapture = OptExclude.IsChecked == true;
-        _cfg.MinimizeToTray = OptTray.IsChecked == true;
+        _cfg.KeepInTrayOnClose = OptTray.IsChecked == true;
         ScheduleSave();
         if (Running && (ReferenceEquals(sender, OptForeground) || ReferenceEquals(sender, OptExclude))) Start();
     }
@@ -541,7 +541,7 @@ public partial class MainWindow : Window
 
     protected override void OnClosing(CancelEventArgs e)
     {
-        if (!_exiting && _cfg.MinimizeToTray && _tray != null)
+        if (!_exiting && _cfg.KeepInTrayOnClose && _tray != null)
         {
             e.Cancel = true;
             Hide();
@@ -562,6 +562,12 @@ public partial class MainWindow : Window
     }
 
     protected override void OnClosed(EventArgs e)
+    {
+        if (_tray != null) { _tray.Visible = false; _tray.Dispose(); }
+        OnClosedCore(e);
+    }
+
+    private void OnClosedCore(EventArgs e)
     {
         Stop();
         ConfigStore.Save(_cfg);
@@ -608,13 +614,13 @@ public partial class MainWindow : Window
             }
             Start();
             if (_engine == null && !_fastActive) throw new InvalidOperationException(StatusText.Text);
-            await Task.Delay(1200);
+            await Task.Delay(1000); long f0 = _engine?.FrameCount ?? 0; await Task.Delay(2000); double fps = ((_engine?.FrameCount ?? 0) - f0) / 2.0;
             string result = "OK";
             if (_engine != null)
             {
                 var engine = _engine;
                 bool ok = await Task.Run(() => engine.SaveSnapshot(outPath));
-                result = ok ? $"OK frames={engine.FrameCount}" : "SNAPSHOT TIMEOUT";
+                result = ok ? $"OK fps={fps}" : "SNAPSHOT TIMEOUT";
             }
             File.WriteAllText(outPath + ".txt", result);
         }

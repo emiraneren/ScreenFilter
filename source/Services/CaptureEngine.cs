@@ -119,6 +119,7 @@ public sealed class CaptureEngine : IDisposable
         result.CheckError();
 
         using var dxgi = _device.QueryInterface<IDXGIDevice>();
+        try { dxgi.SetGPUThreadPriority(7); using var d1 = _device.QueryInterface<IDXGIDevice1>(); d1.MaximumFrameLatency = 1; } catch { }
         Marshal.ThrowExceptionForHR(CreateDirect3D11DeviceFromDXGIDevice(dxgi.NativePointer, out var inspectable));
         try { _winrtDevice = MarshalInterface<IDirect3DDevice>.FromAbi(inspectable); }
         finally { Marshal.Release(inspectable); }
@@ -192,12 +193,13 @@ public sealed class CaptureEngine : IDisposable
     {
         _item = CreateItem(window?.Handle, monitor?.Handle);
         _poolSize = _item.Size;
-        _pool = Direct3D11CaptureFramePool.CreateFreeThreaded(_winrtDevice, DirectXPixelFormat.B8G8R8A8UIntNormalized, 2, _poolSize);
+        _pool = Direct3D11CaptureFramePool.CreateFreeThreaded(_winrtDevice, DirectXPixelFormat.B8G8R8A8UIntNormalized, 3, _poolSize);
         _pool.FrameArrived += OnFrameArrived;
         _item.Closed += (_, _) => TargetClosed?.Invoke();
         _session = _pool.CreateCaptureSession(_item);
         try { _session.IsCursorCaptureEnabled = true; } catch { }
         try { _session.IsBorderRequired = false; } catch { }
+        try { _session.MinUpdateInterval = TimeSpan.FromMilliseconds(Math.Max(1000.0 / DisplayInfo.RefreshRate(monitor?.Device) - 0.5, 1)); } catch { }
         _session.StartCapture();
     }
 
@@ -233,7 +235,7 @@ public sealed class CaptureEngine : IDisposable
             if (size.Width != _poolSize.Width || size.Height != _poolSize.Height)
             {
                 _poolSize = size;
-                sender.Recreate(_winrtDevice, DirectXPixelFormat.B8G8R8A8UIntNormalized, 2, size);
+                sender.Recreate(_winrtDevice, DirectXPixelFormat.B8G8R8A8UIntNormalized, 3, size);
                 return;
             }
 
