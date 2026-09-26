@@ -461,6 +461,7 @@ public partial class MainWindow : Window
     {
         foreach (var r in _rows) r.Relabel();
         BuildFpsCombo();
+        if (_hwnd != IntPtr.Zero) BuildHotkeyPanel();
         BuildPresetChips();
         UpdateModeUi();
         UpdateDimming();
@@ -470,22 +471,117 @@ public partial class MainWindow : Window
 
     // ---------------------------------------------------------------- hotkeys
 
+    private static readonly string[] HkActions = ["toggle", "next", "prev", "up", "down", "reset"];
     private const int HkToggle = 1, HkNext = 2, HkPrev = 3, HkUp = 4, HkDown = 5, HkReset = 6;
+    private readonly Dictionary<string, Button> _hkButtons = [];
+    private string? _capturing;
+
+    private HotkeyBinding Binding(string action) =>
+        _cfg.Hotkeys.TryGetValue(action, out var b) ? b : HotkeyBinding.Defaults[action];
+
+    private bool RegisterOne(string action, HotkeyBinding b)
+    {
+        int id = Array.IndexOf(HkActions, action) + 1;
+        Native.UnregisterHotKey(_hwnd, id);
+        uint mods = b.Mods | (action is "up" or "down" ? 0u : Native.MOD_NOREPEAT);
+        return Native.RegisterHotKey(_hwnd, id, mods, b.Vk);
+    }
+
+    private void RegisterAll()
+    {
+        bool ok = true;
+        foreach (var a in HkActions) ok &= RegisterOne(a, Binding(a));
+        SetHotkeyMessage(ok ? null : "hotkeys.fail");
+    }
+
+    private void SetHotkeyMessage(string? key)
+    {
+        HotkeyWarn.Text = key == null ? "" : Loc.T(key);
+        HotkeyWarn.Visibility = key == null ? Visibility.Collapsed : Visibility.Visible;
+    }
+
+    private void BuildHotkeyPanel()
+    {
+        HotkeyPanel.Children.Clear();
+        _hkButtons.Clear();
+        foreach (var action in HkActions)
+        {
+            var row = new Grid { Margin = new Thickness(0, 0, 0, 6) };
+            row.ColumnDefinitions.Add(new ColumnDefinition());
+            row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+            row.Children.Add(new TextBlock { Text = Loc.T("hk." + action), Style = (Style)FindResource("Muted"), VerticalAlignment = VerticalAlignment.Center });
+            var btn = new Button { Content = Binding(action).ToString(), Style = (Style)FindResource("GhostButton"), MinWidth = 120, Padding = new Thickness(0), Tag = action };
+            btn.Click += (_, _) => StartCapture(action);
+            btn.LostKeyboardFocus += (_, _) => { if (_capturing == action) EndCapture(); };
+            Grid.SetColumn(btn, 1);
+            row.Children.Add(btn);
+            _hkButtons[action] = btn;
+            HotkeyPanel.Children.Add(row);
+        }
+        var reset = new Button { Content = Loc.T("hk.default"), Style = (Style)FindResource("GhostButton"), Margin = new Thickness(0, 6, 0, 0) };
+        reset.Click += (_, _) =>
+        {
+            _cfg.Hotkeys.Clear();
+            ScheduleSave();
+            RegisterAll();
+            BuildHotkeyPanel();
+        };
+        HotkeyPanel.Children.Add(reset);
+        HotkeyPanel.Children.Add(new TextBlock { Text = Loc.T("hk.hint"), Style = (Style)FindResource("Muted"), Foreground = (Brush)FindResource("FaintTextBrush"), Margin = new Thickness(0, 8, 0, 0) });
+    }
+
+    private void StartCapture(string action)
+    {
+        EndCapture();
+        _capturing = action;
+        _hkButtons[action].Content = Loc.T("hk.press");
+        SetHotkeyMessage(null);
+    }
+
+    private void EndCapture()
+    {
+        if (_capturing == null) return;
+        var action = _capturing;
+        _capturing = null;
+        if (_hkButtons.TryGetValue(action, out var b)) b.Content = Binding(action).ToString();
+    }
+
+    protected override void OnPreviewKeyDown(System.Windows.Input.KeyEventArgs e)
+    {
+        if (_capturing == null) { base.OnPreviewKeyDown(e); return; }
+        e.Handled = true;
+        var key = e.Key == System.Windows.Input.Key.System ? e.SystemKey : e.Key;
+        if (key == System.Windows.Input.Key.Escape) { EndCapture(); return; }
+        if (key is System.Windows.Input.Key.LeftCtrl or System.Windows.Input.Key.RightCtrl or System.Windows.Input.Key.LeftAlt
+            or System.Windows.Input.Key.RightAlt or System.Windows.Input.Key.LeftShift or System.Windows.Input.Key.RightShift
+            or System.Windows.Input.Key.LWin or System.Windows.Input.Key.RWin or System.Windows.Input.Key.None) return;
+
+        var m = System.Windows.Input.Keyboard.Modifiers;
+        uint mods = 0;
+        if (m.HasFlag(System.Windows.Input.ModifierKeys.Control)) mods |= HotkeyBinding.Ctrl;
+        if (m.HasFlag(System.Windows.Input.ModifierKeys.Alt)) mods |= HotkeyBinding.Alt;
+        if (m.HasFlag(System.Windows.Input.ModifierKeys.Shift)) mods |= HotkeyBinding.Shift;
+        if (m.HasFlag(System.Windows.Input.ModifierKeys.Windows)) mods |= HotkeyBinding.Win;
+        if (mods == 0) { SetHotkeyMessage("hk.needmod"); return; }
+
+        var action = _capturing;
+        var nb = new HotkeyBinding { Mods = mods, Vk = (uint)System.Windows.Input.KeyInterop.VirtualKeyFromKey(key) };
+        if (HkActions.Any(a => a != action && Binding(a).SameAs(nb))) { SetHotkeyMessage("hk.dup"); return; }
+
+        var old = Binding(action);
+        if (!RegisterOne(action, nb)) { RegisterOne(action, old); SetHotkeyMessage("hk.taken"); return; }
+        _cfg.Hotkeys[action] = nb;
+        ScheduleSave();
+        SetHotkeyMessage(null);
+        EndCapture();
+    }
 
     private void OnSourceInitialized(object? sender, EventArgs e)
     {
         _hwnd = new WindowInteropHelper(this).Handle;
         HwndSource.FromHwnd(_hwnd)?.AddHook(WndProc);
-
-        const uint mods = Native.MOD_CONTROL | Native.MOD_ALT;
-        bool ok = true;
-        ok &= Native.RegisterHotKey(_hwnd, HkToggle, mods | Native.MOD_NOREPEAT, 0x46);
-        ok &= Native.RegisterHotKey(_hwnd, HkNext, mods | Native.MOD_NOREPEAT, 0x27);
-        ok &= Native.RegisterHotKey(_hwnd, HkPrev, mods | Native.MOD_NOREPEAT, 0x25);
-        ok &= Native.RegisterHotKey(_hwnd, HkUp, mods, 0x26);
-        ok &= Native.RegisterHotKey(_hwnd, HkDown, mods, 0x28);
-        ok &= Native.RegisterHotKey(_hwnd, HkReset, mods | Native.MOD_NOREPEAT, 0x24);
-        if (!ok) HotkeyWarn.Visibility = Visibility.Visible;
+        BuildHotkeyPanel();
+        RegisterAll();
         RefreshSources();
     }
 

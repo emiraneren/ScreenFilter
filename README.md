@@ -31,6 +31,8 @@ Double-click a slider label to reset that slider.
 
 ## Hotkeys / Kısayollar
 
+All hotkeys can be changed in the app (click a key, press the new combination). / Tüm kısayollar uygulamadan değiştirilebilir (bir tuşa tıkla, yeni kombinasyona bas).
+
 | Keys | Action |
 |---|---|
 | `Ctrl+Alt+F` | Toggle filter |

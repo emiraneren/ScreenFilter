@@ -104,15 +104,24 @@ public sealed class Loc : INotifyPropertyChanged
 
 
         ["hotkeys.title"] = "HOTKEYS",
-        ["hotkeys.text"] = "Ctrl+Alt+F  toggle filter\nCtrl+Alt+→ / ←  next / previous preset\nCtrl+Alt+↑ / ↓  brightness up / down\nCtrl+Alt+Home  reset all",
         ["hotkeys.fail"] = "Some hotkeys are already used by another app",
+        ["hk.toggle"] = "Toggle filter",
+        ["hk.next"] = "Next preset",
+        ["hk.prev"] = "Previous preset",
+        ["hk.up"] = "Brightness up",
+        ["hk.down"] = "Brightness down",
+        ["hk.reset"] = "Reset all",
+        ["hk.press"] = "Press keys...",
+        ["hk.default"] = "Restore default hotkeys",
+        ["hk.needmod"] = "Use at least one of Ctrl / Alt / Shift / Win",
+        ["hk.dup"] = "Already used by another action",
+        ["hk.taken"] = "This combination is used by another app",
+        ["hk.hint"] = "Click a key to change it. Esc cancels.",
 
         ["opt.onlyfg"] = "Show overlay only while the window is in foreground",
         ["opt.excludecapture"] = "Hide overlay from screenshots / streams",
         ["opt.startmin"] = "Keep running when window is closed (minimize to tray)",
 
-        ["note.exclusive"] = "Tip: games must run in Borderless / Windowed mode. Exclusive fullscreen cannot be filtered by any overlay tool.",
-        ["note.anticheat"] = "This tool only re-draws pixels on screen. It never touches game files or memory. Still, using it in competitive games is at your own risk.",
 
         ["tray.show"] = "Show",
         ["tray.toggle"] = "Toggle filter",
@@ -224,15 +233,24 @@ public sealed class Loc : INotifyPropertyChanged
 
 
         ["hotkeys.title"] = "KISAYOLLAR",
-        ["hotkeys.text"] = "Ctrl+Alt+F  filtreyi aç/kapat\nCtrl+Alt+→ / ←  sonraki / önceki önayar\nCtrl+Alt+↑ / ↓  parlaklık artır / azalt\nCtrl+Alt+Home  tümünü sıfırla",
         ["hotkeys.fail"] = "Bazı kısayollar başka bir uygulama tarafından kullanılıyor",
+        ["hk.toggle"] = "Filtreyi aç/kapat",
+        ["hk.next"] = "Sonraki önayar",
+        ["hk.prev"] = "Önceki önayar",
+        ["hk.up"] = "Parlaklık artır",
+        ["hk.down"] = "Parlaklık azalt",
+        ["hk.reset"] = "Tümünü sıfırla",
+        ["hk.press"] = "Tuşlara bas...",
+        ["hk.default"] = "Varsayılan kısayollara dön",
+        ["hk.needmod"] = "Ctrl / Alt / Shift / Win tuşlarından en az birini kullan",
+        ["hk.dup"] = "Başka bir işlem tarafından kullanılıyor",
+        ["hk.taken"] = "Bu kombinasyon başka bir uygulama tarafından kullanılıyor",
+        ["hk.hint"] = "Değiştirmek için bir tuşa tıkla. Esc iptal eder.",
 
         ["opt.onlyfg"] = "Katmanı yalnızca pencere ön plandayken göster",
         ["opt.excludecapture"] = "Katmanı ekran görüntüsü / yayında gizle",
         ["opt.startmin"] = "Pencere kapanınca çalışmaya devam et (tepsiye küçült)",
 
-        ["note.exclusive"] = "İpucu: Oyunlar Kenarlıksız (Borderless) / Pencereli modda çalışmalı. Tam ekran (exclusive) modu hiçbir katman aracıyla filtrelenemez.",
-        ["note.anticheat"] = "Bu araç yalnızca ekrandaki pikselleri yeniden çizer; oyun dosyalarına veya belleğine dokunmaz. Yine de rekabetçi oyunlarda kullanım sorumluluğu size aittir.",
 
         ["tray.show"] = "Göster",
         ["tray.toggle"] = "Filtreyi aç/kapat",
