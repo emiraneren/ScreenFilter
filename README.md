@@ -16,11 +16,11 @@
 
 ## Presets / Önayarlar
 
-Competitive FPS, Dark Corners Reveal, Enemy Highlight (red / purple), Vibrant, Ultra Sharp, Fog Buster, Night Vision, Cinematic, High-contrast B&W, Night Mode. You can save your own presets too.
+Dark Boost, Competitive FPS, Dark Corners Reveal, Enemy Highlight (red / purple), Vibrant, Ultra Sharp, Fog Buster, Night Vision, Cinematic, High-contrast B&W, Night Mode. You can save your own presets too.
 
 ## Sliders / Ayarlar
 
-- **Light:** brightness, contrast, gamma, exposure, shadow lift, highlight control
+- **Light:** dark boost (lifts only dark areas, keeps highlights), brightness, contrast, gamma, exposure, shadow lift, highlight control
 - **Color:** saturation, vibrance, hue shift, temperature, tint, R/G/B gain, grayscale, invert
 - **Detail:** sharpen, clarity, fog/haze removal
 - **Color target:** boosts one hue (e.g. red enemy outlines) and mutes the rest

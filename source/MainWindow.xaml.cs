@@ -90,6 +90,7 @@ public partial class MainWindow : Window
             panel.Children.Add(row.Root);
         }
 
+        Add(LightPanel, "s.darkboost", 0f, 1f, 0f, "0.00", false, s => s.DarkBoost, (s, v) => s.DarkBoost = v);
         Add(LightPanel, "s.brightness", -0.5f, 0.5f, 0f, "0.00", true, s => s.Brightness, (s, v) => s.Brightness = v);
         Add(LightPanel, "s.contrast", 0.5f, 2f, 1f, "0.00", true, s => s.Contrast, (s, v) => s.Contrast = v);
         Add(LightPanel, "s.gamma", 0.4f, 2.5f, 1f, "0.00", false, s => s.Gamma, (s, v) => s.Gamma = v);

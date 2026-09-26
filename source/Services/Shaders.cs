@@ -14,6 +14,7 @@ cbuffer P : register(b0)
     float4 P0;   // gamma, shadowLift, highlights, vibrance
     float4 P1;   // sharpen, clarity, dehaze, targetAmount
     float4 P2;   // targetHue (0..1), targetRange (0..0.5), texel.x, texel.y
+    float4 P3;   // darkBoost, -, -, -
 };
 
 struct VSOut { float4 pos : SV_Position; float2 uv : TEXCOORD0; };
@@ -82,6 +83,14 @@ float4 PS(VSOut i) : SV_Target
 
     float3 o = float3(dot(R0.xyz, c) + R0.w, dot(R1.xyz, c) + R1.w, dot(R2.xyz, c) + R2.w);
     o = saturate(o);
+
+    if (P3.x > 0.001)
+    {
+        float lum = max(dot(o, LUM), 0.0001);
+        float lifted = pow(lum, 1.0 / (1.0 + P3.x * 2.4));
+        o = saturate(o * min(lifted / lum, 9.0));
+        o += P3.x * 0.05 * pow(saturate(1.0 - lifted), 4.0);
+    }
 
     float l2 = dot(o, LUM);
     float shadow = P0.y * pow(saturate(1.0 - l2), 3.0);

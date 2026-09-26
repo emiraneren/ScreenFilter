@@ -7,6 +7,7 @@ public class FilterSettings
     public float Contrast { get; set; } = 1f;
     public float Gamma { get; set; } = 1f;
     public float Exposure { get; set; }
+    public float DarkBoost { get; set; }
     public float ShadowLift { get; set; }
     public float Highlights { get; set; }
 

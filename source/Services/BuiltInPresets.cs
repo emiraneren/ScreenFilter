@@ -8,6 +8,8 @@ public static class BuiltInPresets
     [
         P("default", new FilterSettings()),
 
+        P("darkboost", new FilterSettings { DarkBoost = 0.55f, Contrast = 1.03f, Sharpen = 0.2f }),
+
         P("competitive", new FilterSettings
         {
             ShadowLift = 0.35f, Contrast = 1.08f, Saturation = 1.25f, Vibrance = 0.25f,
@@ -16,7 +18,7 @@ public static class BuiltInPresets
 
         P("darkreveal", new FilterSettings
         {
-            ShadowLift = 0.85f, Gamma = 1.25f, Contrast = 1.05f, Brightness = 0.03f,
+            DarkBoost = 0.85f, ShadowLift = 0.35f, Gamma = 1.1f, Contrast = 1.05f, Brightness = 0.03f,
             Saturation = 1.1f, Sharpen = 0.3f, Highlights = 0.25f,
         }),
 

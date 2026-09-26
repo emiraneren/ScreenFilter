@@ -78,6 +78,7 @@ public sealed class Loc : INotifyPropertyChanged
         ["sec.target"] = "COLOR TARGET (ENEMY HIGHLIGHT)",
         ["sec.target.desc"] = "Boosts one hue (e.g. red enemy outlines, orange tracers) and slightly mutes everything else so it pops out.",
 
+        ["s.darkboost"] = "Dark boost (darks only)",
         ["s.brightness"] = "Brightness",
         ["s.contrast"] = "Contrast",
         ["s.gamma"] = "Gamma",
@@ -138,6 +139,8 @@ public sealed class Loc : INotifyPropertyChanged
         // presets
         ["preset.default"] = "Default (no filter)",
         ["preset.default.desc"] = "Neutral — nothing changed.",
+        ["preset.darkboost"] = "Dark Boost",
+        ["preset.darkboost.desc"] = "Brightens dark areas only and keeps highlights intact.",
         ["preset.competitive"] = "Competitive FPS",
         ["preset.competitive.desc"] = "Lifted shadows, punchier colors and light sharpening for spotting players faster.",
         ["preset.darkreveal"] = "Dark Corners Reveal",
@@ -207,6 +210,7 @@ public sealed class Loc : INotifyPropertyChanged
         ["sec.target"] = "RENK HEDEFİ (DÜŞMAN VURGUSU)",
         ["sec.target.desc"] = "Tek bir rengi (ör. kırmızı düşman çizgisi, turuncu izler) öne çıkarır ve geri kalanı hafifçe soldurur.",
 
+        ["s.darkboost"] = "Karanlık aydınlatma (yalnız koyu alan)",
         ["s.brightness"] = "Parlaklık",
         ["s.contrast"] = "Kontrast",
         ["s.gamma"] = "Gama",
@@ -266,6 +270,8 @@ public sealed class Loc : INotifyPropertyChanged
 
         ["preset.default"] = "Varsayılan (filtre yok)",
         ["preset.default.desc"] = "Nötr — hiçbir şey değişmez.",
+        ["preset.darkboost"] = "Karanlık Aydınlatma",
+        ["preset.darkboost.desc"] = "Yalnızca karanlık alanları aydınlatır, parlak yerleri korur.",
         ["preset.competitive"] = "Rekabetçi FPS",
         ["preset.competitive.desc"] = "Açılmış gölgeler, canlı renkler ve hafif keskinleştirme; oyuncuları daha hızlı fark edin.",
         ["preset.darkreveal"] = "Karanlık Köşe Açıcı",
