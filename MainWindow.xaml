@@ -1,0 +1,170 @@
+<Window x:Class="ScreenFilter.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:s="clr-namespace:ScreenFilter.Services"
+        Title="Screen Filter" Width="1180" Height="800" MinWidth="1000" MinHeight="640"
+        Background="{StaticResource BackgroundBrush}" WindowStartupLocation="CenterScreen"
+        FontFamily="Segoe UI Variable Text, Segoe UI">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="340"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- ============ LEFT: control panel ============ -->
+        <Border Grid.Column="0" Background="{StaticResource SidebarBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,1,0">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel Margin="22,22,22,22">
+
+                    <Grid>
+                        <StackPanel>
+                            <TextBlock Text="{s:Loc app.title}" FontSize="24" FontWeight="SemiBold" FontFamily="Segoe UI Variable Display, Segoe UI"/>
+                            <Border Height="3" Width="44" CornerRadius="2" HorizontalAlignment="Left" Margin="0,8,0,0">
+                                <Border.Background>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                        <GradientStop Color="#3DD6D0" Offset="0"/>
+                                        <GradientStop Color="#FF9138" Offset="0.55"/>
+                                        <GradientStop Color="#966EFF" Offset="1"/>
+                                    </LinearGradientBrush>
+                                </Border.Background>
+                            </Border>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
+                            <RadioButton x:Name="LangTr" Content="TR" GroupName="lang" Style="{StaticResource LangButton}" Checked="Lang_Checked" Tag="tr"/>
+                            <RadioButton x:Name="LangEn" Content="EN" GroupName="lang" Style="{StaticResource LangButton}" Checked="Lang_Checked" Tag="en"/>
+                        </StackPanel>
+                    </Grid>
+                    <TextBlock Text="{s:Loc app.subtitle}" Style="{StaticResource Muted}" Margin="0,10,0,22"/>
+
+                    <TextBlock Text="{s:Loc mode.title}" Style="{StaticResource Caption}" Margin="0,0,0,8"/>
+                    <RadioButton x:Name="ModeFast" GroupName="mode" Style="{StaticResource ModeCard}" Content="{s:Loc mode.fast}" Tag="Fast" Checked="Mode_Checked"/>
+                    <RadioButton x:Name="ModeMonitor" GroupName="mode" Style="{StaticResource ModeCard}" Content="{s:Loc mode.monitor}" Tag="Monitor" Checked="Mode_Checked"/>
+                    <RadioButton x:Name="ModeWindow" GroupName="mode" Style="{StaticResource ModeCard}" Content="{s:Loc mode.window}" Tag="Window" Checked="Mode_Checked"/>
+                    <TextBlock x:Name="ModeDesc" Style="{StaticResource Muted}" Margin="2,2,2,16"/>
+
+                    <StackPanel x:Name="SourcePanel">
+                        <TextBlock x:Name="SourceLabel" Style="{StaticResource Caption}" Margin="0,0,0,8"/>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <ComboBox x:Name="SourceCombo" SelectionChanged="SourceCombo_SelectionChanged"/>
+                            <Button Grid.Column="1" x:Name="RefreshBtn" Content="⟳" Style="{StaticResource GhostButton}" Margin="8,0,0,0"
+                                    Width="40" FontSize="16" Click="Refresh_Click" ToolTip="{s:Loc source.refresh}"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <Button x:Name="StartBtn" Style="{StaticResource PrimaryButton}" Margin="0,4,0,0" Click="Start_Click"/>
+                    <Grid Margin="2,10,2,0">
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse x:Name="StatusDot" Width="8" Height="8" Fill="{StaticResource FaintTextBrush}" Margin="0,1,8,0"/>
+                            <TextBlock x:Name="StatusText" Style="{StaticResource Muted}" TextWrapping="Wrap" MaxWidth="230"/>
+                        </StackPanel>
+                        <TextBlock x:Name="FpsText" Style="{StaticResource Muted}" HorizontalAlignment="Right"/>
+                    </Grid>
+
+                    <Border Height="1" Background="{StaticResource BorderBrush}" Margin="0,22,0,18"/>
+
+                    <CheckBox x:Name="OptForeground" Content="{s:Loc opt.onlyfg}" Click="Option_Click"/>
+                    <CheckBox x:Name="OptExclude" Content="{s:Loc opt.excludecapture}" Click="Option_Click"/>
+                    <CheckBox x:Name="OptTray" Content="{s:Loc opt.startmin}" Click="Option_Click"/>
+
+                    <Border Height="1" Background="{StaticResource BorderBrush}" Margin="0,10,0,18"/>
+
+                    <TextBlock Text="{s:Loc hotkeys.title}" Style="{StaticResource Caption}" Margin="0,0,0,8"/>
+                    <TextBlock Text="{s:Loc hotkeys.text}" Style="{StaticResource Muted}" LineHeight="20"/>
+                    <TextBlock x:Name="HotkeyWarn" Text="{s:Loc hotkeys.fail}" Style="{StaticResource Muted}" Foreground="{StaticResource DangerBrush}"
+                               Margin="0,6,0,0" Visibility="Collapsed"/>
+
+                    <Border Height="1" Background="{StaticResource BorderBrush}" Margin="0,18,0,16"/>
+                    <TextBlock Text="{s:Loc note.exclusive}" Style="{StaticResource Muted}" Foreground="{StaticResource FaintTextBrush}"/>
+                    <TextBlock Text="{s:Loc note.anticheat}" Style="{StaticResource Muted}" Foreground="{StaticResource FaintTextBrush}" Margin="0,10,0,0"/>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <!-- ============ RIGHT: presets + sliders ============ -->
+        <Grid Grid.Column="1" Margin="28,22,10,0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <StackPanel Grid.Row="0" Margin="0,0,18,10">
+                <Grid Margin="0,0,0,10">
+                    <TextBlock Text="{s:Loc presets.title}" Style="{StaticResource Caption}" VerticalAlignment="Center"/>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                        <Button x:Name="DeletePresetBtn" Content="{s:Loc presets.delete}" Style="{StaticResource GhostButton}" Margin="0,0,8,0"
+                                Click="DeletePreset_Click" Visibility="Collapsed"/>
+                        <Button Content="{s:Loc presets.reset}" Style="{StaticResource GhostButton}" Click="Reset_Click"/>
+                    </StackPanel>
+                </Grid>
+                <WrapPanel x:Name="PresetPanel"/>
+                <TextBlock x:Name="PresetDesc" Style="{StaticResource Muted}" Margin="2,0,0,10"/>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="260"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox x:Name="PresetNameBox" MaxLength="40"/>
+                    <TextBlock Text="{s:Loc presets.name}" Foreground="{StaticResource FaintTextBrush}" FontSize="12.5" Margin="12,0,0,0"
+                               VerticalAlignment="Center" IsHitTestVisible="False">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding Text, ElementName=PresetNameBox}" Value="">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <Button Grid.Column="1" Content="{s:Loc presets.save}" Style="{StaticResource GhostButton}" Margin="8,0,0,0" Click="SavePreset_Click"/>
+                </Grid>
+            </StackPanel>
+
+            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel Margin="0,4,18,24">
+                    <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="20,16,20,6" Margin="0,0,0,14">
+                        <StackPanel>
+                            <TextBlock Text="{s:Loc sec.light}" Style="{StaticResource Caption}" Margin="0,0,0,10"/>
+                            <WrapPanel x:Name="LightPanel"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="20,16,20,6" Margin="0,0,0,14">
+                        <StackPanel>
+                            <TextBlock Text="{s:Loc sec.color}" Style="{StaticResource Caption}" Margin="0,0,0,10"/>
+                            <WrapPanel x:Name="ColorPanel"/>
+                            <Grid Margin="0,4,0,14">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <CheckBox x:Name="InvertCheck" Content="{s:Loc s.invert}" Margin="0,8,40,0" Click="Invert_Click"/>
+                                <TextBlock Grid.Column="1" Text="{s:Loc s.colorblind}" VerticalAlignment="Center" Margin="0,0,12,0" Foreground="{StaticResource MutedTextBrush}" FontSize="12.5"/>
+                                <ComboBox Grid.Column="2" x:Name="ColorBlindCombo" Width="210" SelectionChanged="ColorBlind_Changed"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                    <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="20,16,20,6" Margin="0,0,0,14">
+                        <StackPanel>
+                            <TextBlock Text="{s:Loc sec.detail}" Style="{StaticResource Caption}" Margin="0,0,0,10"/>
+                            <WrapPanel x:Name="DetailPanel"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="20,16,20,6" Margin="0,0,0,14">
+                        <StackPanel>
+                            <TextBlock Text="{s:Loc sec.target}" Style="{StaticResource Caption}" Margin="0,0,0,6"/>
+                            <TextBlock Text="{s:Loc sec.target.desc}" Style="{StaticResource Muted}" Margin="0,0,0,12"/>
+                            <WrapPanel x:Name="TargetPanel"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+    </Grid>
+</Window>
