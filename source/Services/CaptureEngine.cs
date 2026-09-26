@@ -43,6 +43,12 @@ public sealed class CaptureEngine : IDisposable
     private Timer? _followTimer;
     private Windows.Graphics.SizeInt32 _poolSize;
     private int _width, _height;
+
+    // NVIDIA overlay treats an exactly monitor-sized topmost window as a fullscreen game and drops Instant Replay, so stay 2px smaller.
+    private const int InsetPx = 2;
+    private int OutW => Math.Max(_width - InsetPx, 8);
+    private int OutH => Math.Max(_height - InsetPx, 8);
+    private static RECT Inset(RECT r) { r.Right -= InsetPx; r.Bottom -= InsetPx; return r; }
     private bool _disposed;
     private bool _hasFrame;
     private string? _snapshotPath;
@@ -69,7 +75,7 @@ public sealed class CaptureEngine : IDisposable
         _height = Math.Max(bounds.Height, 16);
 
         // Overlay must be excluded from capture when capturing a monitor, otherwise it would capture itself.
-        _overlay = new OverlayWindow(bounds, excludeFromCapture || !_windowMode);
+        _overlay = new OverlayWindow(Inset(bounds), excludeFromCapture || !_windowMode);
 
         try
         {
@@ -155,8 +161,8 @@ public sealed class CaptureEngine : IDisposable
         using var factory = adapter.GetParent<IDXGIFactory2>();
         var desc = new SwapChainDescription1
         {
-            Width = (uint)_width,
-            Height = (uint)_height,
+            Width = (uint)OutW,
+            Height = (uint)OutH,
             Format = Format.B8G8R8A8_UNorm,
             BufferUsage = Usage.RenderTargetOutput,
             BufferCount = 2,
@@ -272,7 +278,7 @@ public sealed class CaptureEngine : IDisposable
                 _width = Math.Max(size.Width, 16);
                 _height = Math.Max(size.Height, 16);
                 _rtv?.Dispose(); _rtv = null;
-                _swap.ResizeBuffers(0, (uint)_width, (uint)_height, Format.Unknown, SwapChainFlags.None);
+                _swap.ResizeBuffers(0, (uint)OutW, (uint)OutH, Format.Unknown, SwapChainFlags.None);
                 CreateTargets();
             }
 
@@ -308,11 +314,13 @@ public sealed class CaptureEngine : IDisposable
         var c = (float[])_constants.Clone();
         c[22] = 1f / _width;
         c[23] = 1f / _height;
+        c[25] = OutW / (float)_width;
+        c[26] = OutH / (float)_height;
         Marshal.Copy(c, 0, mapped.DataPointer, c.Length);
         _ctx.Unmap(_cb, 0);
 
         _ctx.OMSetRenderTargets(_rtv!);
-        _ctx.RSSetViewport(0, 0, _width, _height);
+        _ctx.RSSetViewport(0, 0, OutW, OutH);
         _ctx.IASetPrimitiveTopology(PrimitiveTopology.TriangleList);
         _ctx.VSSetShader(_vs);
         _ctx.PSSetShader(_ps);
@@ -381,7 +389,7 @@ public sealed class CaptureEngine : IDisposable
             if (visible)
             {
                 var r = GetVisibleBounds(_targetWindow);
-                if (r.Width > 0 && r.Height > 0) _overlay.SetBounds(r);
+                if (r.Width > 0 && r.Height > 0) _overlay.SetBounds(Inset(r));
             }
             _overlay.SetVisible(visible);
         }

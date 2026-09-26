@@ -50,27 +50,28 @@ float3 HsvToRgb(float3 c)
 float4 PS(VSOut i) : SV_Target
 {
     float2 t = P2.zw;
-    float3 c = Src.Sample(Smp, i.uv).rgb;
+    float2 uv0 = i.uv * P3.yz;
+    float3 c = Src.Sample(Smp, uv0).rgb;
 
     if (P1.x > 0.001 || P1.y > 0.001)
     {
-        float3 n = Src.Sample(Smp, i.uv + float2(t.x, 0)).rgb
-                 + Src.Sample(Smp, i.uv - float2(t.x, 0)).rgb
-                 + Src.Sample(Smp, i.uv + float2(0, t.y)).rgb
-                 + Src.Sample(Smp, i.uv - float2(0, t.y)).rgb;
+        float3 n = Src.Sample(Smp, uv0 + float2(t.x, 0)).rgb
+                 + Src.Sample(Smp, uv0 - float2(t.x, 0)).rgb
+                 + Src.Sample(Smp, uv0 + float2(0, t.y)).rgb
+                 + Src.Sample(Smp, uv0 - float2(0, t.y)).rgb;
         c += P1.x * 1.5 * (c - n * 0.25);
 
         if (P1.y > 0.001)
         {
             float2 d = t * 3.0;
-            float3 w = Src.Sample(Smp, i.uv + float2(d.x, 0)).rgb
-                     + Src.Sample(Smp, i.uv - float2(d.x, 0)).rgb
-                     + Src.Sample(Smp, i.uv + float2(0, d.y)).rgb
-                     + Src.Sample(Smp, i.uv - float2(0, d.y)).rgb
-                     + Src.Sample(Smp, i.uv + d).rgb
-                     + Src.Sample(Smp, i.uv - d).rgb
-                     + Src.Sample(Smp, i.uv + float2(d.x, -d.y)).rgb
-                     + Src.Sample(Smp, i.uv + float2(-d.x, d.y)).rgb;
+            float3 w = Src.Sample(Smp, uv0 + float2(d.x, 0)).rgb
+                     + Src.Sample(Smp, uv0 - float2(d.x, 0)).rgb
+                     + Src.Sample(Smp, uv0 + float2(0, d.y)).rgb
+                     + Src.Sample(Smp, uv0 - float2(0, d.y)).rgb
+                     + Src.Sample(Smp, uv0 + d).rgb
+                     + Src.Sample(Smp, uv0 - d).rgb
+                     + Src.Sample(Smp, uv0 + float2(d.x, -d.y)).rgb
+                     + Src.Sample(Smp, uv0 + float2(-d.x, d.y)).rgb;
             float l = dot(c, LUM);
             float mid = 1.0 - abs(2.0 * l - 1.0);
             c += P1.y * 1.6 * mid * (c - w * 0.125);
