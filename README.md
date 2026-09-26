@@ -8,7 +8,7 @@
 
 | Mode | What it does | Notes |
 |---|---|---|
-| **Fast (color only)** / Hızlı | Sets a system-wide color matrix through the Windows Magnification API. | Zero added latency, no capture. Only color sliders work (brightness, contrast, saturation, hue, temperature, tint, RGB gain, grayscale, invert, color-blind assist, exposure). |
+| **Fast (color only)** / Hızlı | Sets a system-wide color matrix through the Windows Magnification API. | Zero added latency, no capture. Only color sliders work (brightness, contrast, saturation, hue, temperature, tint, RGB gain, grayscale, invert, exposure). |
 | **Monitor capture** / Monitör yakalama | Captures a whole monitor on the GPU (Windows.Graphics.Capture) and re-draws it through a pixel shader in a click-through overlay. | All effects work: gamma, shadow lift, sharpen, clarity, dehaze, color-target highlight. |
 | **Window capture** / Pencere yakalama | Captures one window (e.g. your game) and draws the filtered image exactly over it. | Overlay follows the window and hides when it is not in the foreground. |
 
