@@ -129,6 +129,10 @@ public sealed class Loc : INotifyPropertyChanged
         ["tray.exit"] = "Exit",
 
         ["lang"] = "Language",
+        ["view.title"] = "VIEW",
+        ["view.basic"] = "Basic",
+        ["view.detailed"] = "Detailed",
+        ["view.basic.hint"] = "The most used settings. Pick a preset, then fine-tune it to your eyes here. Switch to Detailed for everything.",
         ["fps.title"] = "CAPTURE RATE (Hz)",
         ["fps.auto"] = "Auto (display refresh rate)",
         ["fps.unlimited"] = "Unlimited (not recommended)",
@@ -261,6 +265,10 @@ public sealed class Loc : INotifyPropertyChanged
         ["tray.exit"] = "Çıkış",
 
         ["lang"] = "Dil",
+        ["view.title"] = "GÖRÜNÜM",
+        ["view.basic"] = "Basit",
+        ["view.detailed"] = "Detaylı",
+        ["view.basic.hint"] = "En çok kullanılan ayarlar. Bir önayar seç, sonra gözüne göre buradan ince ayar yap. Her şey için Detaylı görünüme geç.",
         ["fps.title"] = "YAKALAMA HIZI (Hz)",
         ["fps.auto"] = "Otomatik (ekran yenileme hızı)",
         ["fps.unlimited"] = "Sınırsız (önerilmez)",

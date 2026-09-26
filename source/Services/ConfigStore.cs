@@ -17,6 +17,7 @@ public class AppConfig
     public bool OnlyWhenForeground { get; set; } = true;
     public bool ExcludeFromCapture { get; set; } = true;
     public bool KeepInTrayOnClose { get; set; } = false;
+    public bool SimpleView { get; set; } = true;
     public FilterSettings Current { get; set; } = new();
     public List<Preset> CustomPresets { get; set; } = [];
 }

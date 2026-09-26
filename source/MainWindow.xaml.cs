@@ -49,9 +49,11 @@ public partial class MainWindow : Window
         OptForeground.IsChecked = _cfg.OnlyWhenForeground;
         OptExclude.IsChecked = _cfg.ExcludeFromCapture;
         OptTray.IsChecked = _cfg.KeepInTrayOnClose;
+        (_cfg.SimpleView ? ViewBasic : ViewDetailed).IsChecked = true;
         _suppress = false;
 
         BuildPresetChips();
+        ApplyView();
         RefreshAll();
         RefreshSources();
         UpdateModeUi();
@@ -108,6 +110,13 @@ public partial class MainWindow : Window
         Add(ColorPanel, "s.green", 0.4f, 1.6f, 1f, "0.00", true, s => s.Green, (s, v) => s.Green = v);
         Add(ColorPanel, "s.blue", 0.4f, 1.6f, 1f, "0.00", true, s => s.Blue, (s, v) => s.Blue = v);
 
+        Add(BasicPanel, "s.darkboost", 0f, 1f, 0f, "0.00", false, s => s.DarkBoost, (s, v) => s.DarkBoost = v);
+        Add(BasicPanel, "s.brightness", -0.5f, 0.5f, 0f, "0.00", true, s => s.Brightness, (s, v) => s.Brightness = v);
+        Add(BasicPanel, "s.contrast", 0.5f, 2f, 1f, "0.00", true, s => s.Contrast, (s, v) => s.Contrast = v);
+        Add(BasicPanel, "s.saturation", 0f, 2.5f, 1f, "0.00", true, s => s.Saturation, (s, v) => s.Saturation = v);
+        Add(BasicPanel, "s.temperature", -1f, 1f, 0f, "0.00", true, s => s.Temperature, (s, v) => s.Temperature = v);
+        Add(BasicPanel, "s.sharpen", 0f, 2f, 0f, "0.00", false, s => s.Sharpen, (s, v) => s.Sharpen = v);
+
         Add(DetailPanel, "s.sharpen", 0f, 2f, 0f, "0.00", false, s => s.Sharpen, (s, v) => s.Sharpen = v);
         Add(DetailPanel, "s.clarity", 0f, 1f, 0f, "0.00", false, s => s.Clarity, (s, v) => s.Clarity = v);
         Add(DetailPanel, "s.dehaze", 0f, 1f, 0f, "0.00", false, s => s.Dehaze, (s, v) => s.Dehaze = v);
@@ -132,6 +141,7 @@ public partial class MainWindow : Window
     private void OnSliderChanged(SliderRow row)
     {
         if (_suppress) return;
+        foreach (var r in _rows) if (!ReferenceEquals(r, row)) r.Refresh(_cur);
         ClearPresetSelection();
         ApplyLive();
         ScheduleSave();
@@ -178,6 +188,20 @@ public partial class MainWindow : Window
         InvertCheck.IsChecked = _cur.Invert;
         _suppress = false;
         UpdateDimming();
+    }
+
+    private void View_Checked(object sender, RoutedEventArgs e)
+    {
+        if (_suppress || sender is not RadioButton { Tag: string tag }) return;
+        _cfg.SimpleView = tag == "basic";
+        ApplyView();
+        ScheduleSave();
+    }
+
+    private void ApplyView()
+    {
+        BasicView.Visibility = _cfg.SimpleView ? Visibility.Visible : Visibility.Collapsed;
+        DetailedView.Visibility = _cfg.SimpleView ? Visibility.Collapsed : Visibility.Visible;
     }
 
     private void UpdateDimming()

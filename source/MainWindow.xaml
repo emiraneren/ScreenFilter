@@ -88,6 +88,7 @@
         <Grid Grid.Column="1" Margin="28,22,10,0">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
@@ -126,7 +127,24 @@
                 </Grid>
             </StackPanel>
 
-            <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+            <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,18,4">
+                <TextBlock Text="{s:Loc view.title}" Style="{StaticResource Caption}" VerticalAlignment="Center" Margin="0,0,14,8"/>
+                <RadioButton x:Name="ViewBasic" GroupName="view" Style="{StaticResource Chip}" Content="{s:Loc view.basic}" Tag="basic" Checked="View_Checked"/>
+                <RadioButton x:Name="ViewDetailed" GroupName="view" Style="{StaticResource Chip}" Content="{s:Loc view.detailed}" Tag="detailed" Checked="View_Checked"/>
+            </StackPanel>
+
+            <ScrollViewer x:Name="BasicView" Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                <StackPanel Margin="0,4,18,24">
+                    <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="24,18,24,8" HorizontalAlignment="Left">
+                        <StackPanel Width="352">
+                            <TextBlock Text="{s:Loc view.basic.hint}" Style="{StaticResource Muted}" Margin="0,0,0,18"/>
+                            <StackPanel x:Name="BasicPanel"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+
+            <ScrollViewer x:Name="DetailedView" Grid.Row="2" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Visibility="Collapsed">
                 <StackPanel Margin="0,4,18,24">
                     <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="20,16,20,6" Margin="0,0,0,14">
                         <StackPanel>
