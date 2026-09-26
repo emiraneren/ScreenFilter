@@ -70,9 +70,6 @@ public static class BuiltInPresets
             Temperature = 0.55f, Brightness = -0.06f, Blue = 0.78f, Contrast = 0.95f, Saturation = 0.9f,
         }),
 
-        P("protan", new FilterSettings { ColorBlind = ColorBlindMode.Protanopia, Contrast = 1.05f, Saturation = 1.1f }),
-        P("deutan", new FilterSettings { ColorBlind = ColorBlindMode.Deuteranopia, Contrast = 1.05f, Saturation = 1.1f }),
-        P("tritan", new FilterSettings { ColorBlind = ColorBlindMode.Tritanopia, Contrast = 1.05f, Saturation = 1.1f }),
     ];
 
     private static Preset P(string id, FilterSettings s) => new() { Id = id, Settings = s };

@@ -54,8 +54,10 @@ public sealed class CaptureEngine : IDisposable
     public long FrameCount => Interlocked.Read(ref _frameCount);
     public event Action? TargetClosed;
 
-    public CaptureEngine(MonitorSource? monitor, WindowSource? window, FilterSettings initial, bool onlyForeground, bool excludeFromCapture, IntPtr selfWindow)
+    public CaptureEngine(MonitorSource? monitor, WindowSource? window, FilterSettings initial, bool onlyForeground, bool excludeFromCapture, IntPtr selfWindow, int maxFps)
     {
+        _maxFps = maxFps;
+        _displayDevice = monitor?.Device;
         UpdateSettings(initial, redraw: false);
         _windowMode = window != null;
         _targetWindow = window?.Handle ?? IntPtr.Zero;
@@ -92,7 +94,7 @@ public sealed class CaptureEngine : IDisposable
         lock (_gate)
         {
             if (_disposed || !_hasFrame) return;
-            Render();
+            try { Render(); } catch (Exception ex) { Failed?.Invoke(ex.Message); }
         }
     }
 
@@ -199,7 +201,7 @@ public sealed class CaptureEngine : IDisposable
         _session = _pool.CreateCaptureSession(_item);
         try { _session.IsCursorCaptureEnabled = true; } catch { }
         try { _session.IsBorderRequired = false; } catch { }
-        try { _session.MinUpdateInterval = TimeSpan.FromMilliseconds(Math.Max(1000.0 / DisplayInfo.RefreshRate(monitor?.Device) - 0.5, 1)); } catch { }
+        SetMaxFps(_maxFps);
         _session.StartCapture();
     }
 
@@ -222,7 +224,32 @@ public sealed class CaptureEngine : IDisposable
         finally { Marshal.Release(factory); }
     }
 
+    private int _errors;
+    public event Action<string>? Failed;
+    private int _maxFps;
+    private string? _displayDevice;
+
+    /// <summary>0 = display refresh rate, otherwise the cap in frames per second.</summary>
+    public void SetMaxFps(int fps)
+    {
+        _maxFps = fps;
+        double display = DisplayInfo.RefreshRate(_displayDevice);
+        double target = fps <= 0 ? display : fps >= 1000 ? 100000 : Math.Min(fps, display);
+        double ticks = Math.Max(1, Math.Round(display / target));
+        double ms = fps >= 1000 ? 0.5 : (ticks - 0.5) * 1000.0 / display;
+        try { _session.MinUpdateInterval = TimeSpan.FromMilliseconds(ms); } catch { }
+    }
+
     private void OnFrameArrived(Direct3D11CaptureFramePool sender, object args)
+    {
+        try { OnFrameArrivedCore(sender); _errors = 0; }
+        catch (Exception ex) when (!_disposed)
+        {
+            if (++_errors >= 20) Failed?.Invoke(ex.Message);
+        }
+    }
+
+    private void OnFrameArrivedCore(Direct3D11CaptureFramePool sender)
     {
         using var frame = sender.TryGetNextFrame();
         if (frame == null) return;

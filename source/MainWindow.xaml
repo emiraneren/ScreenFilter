@@ -53,6 +53,9 @@
                             <Button Grid.Column="1" x:Name="RefreshBtn" Content="⟳" Style="{StaticResource GhostButton}" Margin="8,0,0,0"
                                     Width="40" FontSize="16" Click="Refresh_Click" ToolTip="{s:Loc source.refresh}"/>
                         </Grid>
+                        <TextBlock Text="{s:Loc fps.title}" Style="{StaticResource Caption}" Margin="0,16,0,8"/>
+                        <ComboBox x:Name="FpsCombo" SelectionChanged="FpsCombo_SelectionChanged"/>
+                        <TextBlock Text="{s:Loc fps.desc}" Style="{StaticResource Muted}" Margin="2,6,2,18"/>
                     </StackPanel>
 
                     <Button x:Name="StartBtn" Style="{StaticResource PrimaryButton}" Margin="0,4,0,0" Click="Start_Click"/>
@@ -138,16 +141,7 @@
                         <StackPanel>
                             <TextBlock Text="{s:Loc sec.color}" Style="{StaticResource Caption}" Margin="0,0,0,10"/>
                             <WrapPanel x:Name="ColorPanel"/>
-                            <Grid Margin="0,4,0,14">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <CheckBox x:Name="InvertCheck" Content="{s:Loc s.invert}" Margin="0,8,40,0" Click="Invert_Click"/>
-                                <TextBlock Grid.Column="1" Text="{s:Loc s.colorblind}" VerticalAlignment="Center" Margin="0,0,12,0" Foreground="{StaticResource MutedTextBrush}" FontSize="12.5"/>
-                                <ComboBox Grid.Column="2" x:Name="ColorBlindCombo" Width="210" SelectionChanged="ColorBlind_Changed"/>
-                            </Grid>
+                            <CheckBox x:Name="InvertCheck" Content="{s:Loc s.invert}" Margin="0,4,0,14" Click="Invert_Click"/>
                         </StackPanel>
                     </Border>
                     <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="20,16,20,6" Margin="0,0,0,14">

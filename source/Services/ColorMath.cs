@@ -50,7 +50,6 @@ public static class ColorMath
         m = m.Then(Saturation(s.Saturation));
         if (s.Grayscale > 0f) m = m.Then(Saturation(1f - s.Grayscale));
         if (MathF.Abs(s.Hue) > 0.01f) m = m.Then(HueRotate(s.Hue));
-        if (s.ColorBlind != ColorBlindMode.None) m = m.Then(Daltonize(s.ColorBlind));
         if (s.Invert) m = m.Then(new Affine([-1, 0, 0, 0, -1, 0, 0, 0, -1], [1, 1, 1]));
         return m;
     }
@@ -73,31 +72,5 @@ public static class ColorMath
              Lr - cos * Lr + sin * 0.143f, Lg + cos * (1 - Lg) + sin * 0.140f, Lb - cos * Lb - sin * 0.283f,
              Lr - cos * Lr - sin * (1 - Lr), Lg - cos * Lg + sin * Lg, Lb + cos * (1 - Lb) + sin * Lb],
             [0, 0, 0]);
-    }
-
-    /// <summary>Color-vision assist: shifts the information a deficient eye cannot see into channels it can.</summary>
-    private static Affine Daltonize(ColorBlindMode mode)
-    {
-        float[] sim = mode switch
-        {
-            ColorBlindMode.Protanopia => [0.567f, 0.433f, 0f, 0.558f, 0.442f, 0f, 0f, 0.242f, 0.758f],
-            ColorBlindMode.Deuteranopia => [0.625f, 0.375f, 0f, 0.7f, 0.3f, 0f, 0f, 0.3f, 0.7f],
-            _ => [0.95f, 0.05f, 0f, 0f, 0.433f, 0.567f, 0f, 0.475f, 0.525f],
-        };
-        float[] shift = mode == ColorBlindMode.Tritanopia
-            ? [1, 0, 0.7f, 0, 1, 0.7f, 0, 0, 0]
-            : [0, 0, 0, 0.7f, 1, 0, 0.7f, 0, 1];
-
-        // out = c + shift * (c - sim * c) = (I + shift * (I - sim)) * c
-        var d = new float[9];
-        for (int i = 0; i < 9; i++) d[i] = (i % 4 == 0 ? 1f : 0f) - sim[i];
-        var a = new float[9];
-        for (int r = 0; r < 3; r++)
-            for (int c = 0; c < 3; c++)
-            {
-                float v = shift[r * 3] * d[c] + shift[r * 3 + 1] * d[3 + c] + shift[r * 3 + 2] * d[6 + c];
-                a[r * 3 + c] = (r == c ? 1f : 0f) + v;
-            }
-        return new Affine(a, [0, 0, 0]);
     }
 }

@@ -100,13 +100,8 @@ public sealed class Loc : INotifyPropertyChanged
         ["s.targethue"] = "Target hue",
         ["s.targetrange"] = "Hue width",
         ["s.invert"] = "Invert colors",
-        ["s.colorblind"] = "Color-vision assist",
         ["s.unsupported"] = "Not available in fast mode",
 
-        ["cb.none"] = "Off",
-        ["cb.protan"] = "Protanopia (red)",
-        ["cb.deutan"] = "Deuteranopia (green)",
-        ["cb.tritan"] = "Tritanopia (blue)",
 
         ["hotkeys.title"] = "HOTKEYS",
         ["hotkeys.text"] = "Ctrl+Alt+F  toggle filter\nCtrl+Alt+→ / ←  next / previous preset\nCtrl+Alt+↑ / ↓  brightness up / down\nCtrl+Alt+Home  reset all",
@@ -124,6 +119,10 @@ public sealed class Loc : INotifyPropertyChanged
         ["tray.exit"] = "Exit",
 
         ["lang"] = "Language",
+        ["fps.title"] = "CAPTURE RATE (Hz)",
+        ["fps.auto"] = "Auto (display refresh rate)",
+        ["fps.unlimited"] = "Unlimited (not recommended)",
+        ["fps.desc"] = "Maximum frames per second the filter redraws. Match your monitor; lower it if the game loses FPS.",
         ["toast.on"] = "Screen filter: ON",
         ["toast.off"] = "Screen filter: OFF",
 
@@ -152,12 +151,6 @@ public sealed class Loc : INotifyPropertyChanged
         ["preset.bw.desc"] = "Black & white with strong contrast; movement stands out from color noise.",
         ["preset.nightmode"] = "Night Mode (eye comfort)",
         ["preset.nightmode.desc"] = "Warm, dimmed image with less blue light for late sessions.",
-        ["preset.protan"] = "Color-blind: Protanopia",
-        ["preset.protan.desc"] = "Assist for red-weak vision.",
-        ["preset.deutan"] = "Color-blind: Deuteranopia",
-        ["preset.deutan.desc"] = "Assist for green-weak vision.",
-        ["preset.tritan"] = "Color-blind: Tritanopia",
-        ["preset.tritan.desc"] = "Assist for blue-weak vision.",
     };
 
     private static readonly Dictionary<string, string> Tr = new()
@@ -227,13 +220,8 @@ public sealed class Loc : INotifyPropertyChanged
         ["s.targethue"] = "Hedef renk tonu",
         ["s.targetrange"] = "Ton genişliği",
         ["s.invert"] = "Renkleri ters çevir",
-        ["s.colorblind"] = "Renk körlüğü desteği",
         ["s.unsupported"] = "Hızlı modda kullanılamaz",
 
-        ["cb.none"] = "Kapalı",
-        ["cb.protan"] = "Protanopi (kırmızı)",
-        ["cb.deutan"] = "Döteranopi (yeşil)",
-        ["cb.tritan"] = "Tritanopi (mavi)",
 
         ["hotkeys.title"] = "KISAYOLLAR",
         ["hotkeys.text"] = "Ctrl+Alt+F  filtreyi aç/kapat\nCtrl+Alt+→ / ←  sonraki / önceki önayar\nCtrl+Alt+↑ / ↓  parlaklık artır / azalt\nCtrl+Alt+Home  tümünü sıfırla",
@@ -251,6 +239,10 @@ public sealed class Loc : INotifyPropertyChanged
         ["tray.exit"] = "Çıkış",
 
         ["lang"] = "Dil",
+        ["fps.title"] = "YAKALAMA HIZI (Hz)",
+        ["fps.auto"] = "Otomatik (ekran yenileme hızı)",
+        ["fps.unlimited"] = "Sınırsız (önerilmez)",
+        ["fps.desc"] = "Filtrenin saniyede en fazla kaç kare çizeceği. Monitörünle aynı yap; oyunda FPS düşüyorsa azalt.",
         ["toast.on"] = "Ekran filtresi: AÇIK",
         ["toast.off"] = "Ekran filtresi: KAPALI",
 
@@ -278,11 +270,5 @@ public sealed class Loc : INotifyPropertyChanged
         ["preset.bw.desc"] = "Güçlü kontrastlı siyah-beyaz; hareket renk karmaşasından sıyrılır.",
         ["preset.nightmode"] = "Gece Modu (göz konforu)",
         ["preset.nightmode.desc"] = "Sıcak, kısılmış ve daha az mavi ışıklı görüntü; uzun seanslar için.",
-        ["preset.protan"] = "Renk körlüğü: Protanopi",
-        ["preset.protan.desc"] = "Kırmızıyı zayıf görenler için destek.",
-        ["preset.deutan"] = "Renk körlüğü: Döteranopi",
-        ["preset.deutan.desc"] = "Yeşili zayıf görenler için destek.",
-        ["preset.tritan"] = "Renk körlüğü: Tritanopi",
-        ["preset.tritan.desc"] = "Maviyi zayıf görenler için destek.",
     };
 }

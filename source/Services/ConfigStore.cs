@@ -11,6 +11,7 @@ public class AppConfig
 {
     public string Language { get; set; } = System.Globalization.CultureInfo.CurrentUICulture.TwoLetterISOLanguageName == "tr" ? "tr" : "en";
     public CaptureMode Mode { get; set; } = CaptureMode.Monitor;
+    public int CaptureFps { get; set; }
     public string? LastPresetId { get; set; } = "default";
     public bool OnlyWhenForeground { get; set; } = true;
     public bool ExcludeFromCapture { get; set; } = true;

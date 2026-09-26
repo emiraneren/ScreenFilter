@@ -41,7 +41,7 @@ public partial class MainWindow : Window
         Icon = System.Windows.Media.Imaging.BitmapFrame.Create(new Uri("pack://application:,,,/AppIcon.ico"));
 
         BuildSliders();
-        BuildColorBlindCombo();
+        BuildFpsCombo();
 
         _suppress = true;
         (_cfg.Language == "tr" ? LangTr : LangEn).IsChecked = true;
@@ -136,22 +136,28 @@ public partial class MainWindow : Window
         ScheduleSave();
     }
 
-    private void BuildColorBlindCombo()
+    private static readonly int[] FpsChoices = [0, 30, 60, 75, 90, 120, 144, 165, 180, 240, 360, 1000];
+
+    private void BuildFpsCombo()
     {
-        int sel = Math.Max(ColorBlindCombo.SelectedIndex, 0);
         _suppress = true;
-        ColorBlindCombo.Items.Clear();
-        foreach (var k in new[] { "cb.none", "cb.protan", "cb.deutan", "cb.tritan" }) ColorBlindCombo.Items.Add(Loc.T(k));
-        ColorBlindCombo.SelectedIndex = sel;
+        FpsCombo.Items.Clear();
+        foreach (int v in FpsChoices)
+        {
+            string label = v == 0 ? Loc.T("fps.auto") : v == 1000 ? Loc.T("fps.unlimited") : $"{v} Hz";
+            var item = new ComboBoxItem { Content = label, Tag = v };
+            FpsCombo.Items.Add(item);
+            if (v == _cfg.CaptureFps) FpsCombo.SelectedItem = item;
+        }
+        if (FpsCombo.SelectedItem == null) FpsCombo.SelectedIndex = 0;
         _suppress = false;
     }
 
-    private void ColorBlind_Changed(object sender, SelectionChangedEventArgs e)
+    private void FpsCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (_suppress || ColorBlindCombo.SelectedIndex < 0) return;
-        _cur.ColorBlind = (ColorBlindMode)ColorBlindCombo.SelectedIndex;
-        ClearPresetSelection();
-        ApplyLive();
+        if (_suppress || FpsCombo.SelectedItem is not ComboBoxItem { Tag: int v }) return;
+        _cfg.CaptureFps = v;
+        _engine?.SetMaxFps(v);
         ScheduleSave();
     }
 
@@ -169,7 +175,6 @@ public partial class MainWindow : Window
         _suppress = true;
         foreach (var r in _rows) r.Refresh(_cur);
         InvertCheck.IsChecked = _cur.Invert;
-        ColorBlindCombo.SelectedIndex = (int)_cur.ColorBlind;
         _suppress = false;
         UpdateDimming();
     }
@@ -355,7 +360,7 @@ public partial class MainWindow : Window
                 case CaptureMode.Monitor:
                     {
                         var mon = SourceCombo.SelectedItem as MonitorSource ?? Sources.Monitors().First();
-                        _engine = new CaptureEngine(mon, null, _cur, false, true, _hwnd);
+                        _engine = new CaptureEngine(mon, null, _cur, false, true, _hwnd, _cfg.CaptureFps);
                         SetStatus("status.on.monitor", StatusKind.Ok, mon.ToString());
                         break;
                     }
@@ -363,7 +368,7 @@ public partial class MainWindow : Window
                 case CaptureMode.Window:
                     {
                         if (SourceCombo.SelectedItem is not WindowSource win) { SetStatus("status.nowindow", StatusKind.Error); return; }
-                        _engine = new CaptureEngine(null, win, _cur, OptForeground.IsChecked == true, OptExclude.IsChecked == true, _hwnd);
+                        _engine = new CaptureEngine(null, win, _cur, OptForeground.IsChecked == true, OptExclude.IsChecked == true, _hwnd, _cfg.CaptureFps);
                         SetStatus("status.on.window", StatusKind.Ok, win.ToString());
                         break;
                     }
@@ -378,6 +383,12 @@ public partial class MainWindow : Window
                     if (_engine != engine) return;
                     Stop();
                     SetStatus("status.windowgone", StatusKind.Error);
+                });
+                engine.Failed += msg => Dispatcher.BeginInvoke(() =>
+                {
+                    if (_engine != engine) return;
+                    Stop();
+                    SetStatus("status.error", StatusKind.Error, msg);
                 });
             }
         }
@@ -449,7 +460,7 @@ public partial class MainWindow : Window
     private void OnLanguageChanged()
     {
         foreach (var r in _rows) r.Relabel();
-        BuildColorBlindCombo();
+        BuildFpsCombo();
         BuildPresetChips();
         UpdateModeUi();
         UpdateDimming();
@@ -565,6 +576,8 @@ public partial class MainWindow : Window
     {
         if (_tray != null) { _tray.Visible = false; _tray.Dispose(); }
         OnClosedCore(e);
+        _toast.Close();
+        Application.Current.Shutdown();
     }
 
     private void OnClosedCore(EventArgs e)

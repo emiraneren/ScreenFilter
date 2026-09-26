@@ -1,6 +1,5 @@
 namespace ScreenFilter.Models;
 
-public enum ColorBlindMode { None, Protanopia, Deuteranopia, Tritanopia }
 
 public class FilterSettings
 {
@@ -21,7 +20,6 @@ public class FilterSettings
     public float Blue { get; set; } = 1f;
     public float Grayscale { get; set; }
     public bool Invert { get; set; }
-    public ColorBlindMode ColorBlind { get; set; }
 
     public float Sharpen { get; set; }
     public float Clarity { get; set; }
