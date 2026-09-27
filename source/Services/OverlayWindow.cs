@@ -19,6 +19,9 @@ public sealed class OverlayWindow : IDisposable
     private readonly ManualResetEventSlim _ready = new();
     private RECT _initial;
     private bool _excludeFromCapture;
+    private RECT _lastBounds;
+    private bool _haveLastBounds;
+    private int _ticksSinceTopmost;
 
     public IntPtr Handle { get; private set; }
     public bool Visible { get; private set; }
@@ -70,8 +73,22 @@ public sealed class OverlayWindow : IDisposable
         }
     }
 
+    /// <summary>
+    /// Only touches the window when the rect actually changed (plus an occasional keep-alive) so a
+    /// stationary game window doesn't get HWND_TOPMOST re-asserted 100+ times a second — that constant
+    /// re-topping is what was fighting other topmost overlays (Discord, GamePP, the Alt-Tab switcher)
+    /// and made switching windows feel janky.
+    /// </summary>
     public void SetBounds(RECT r)
     {
+        bool unchanged = _haveLastBounds && r.Left == _lastBounds.Left && r.Top == _lastBounds.Top
+            && r.Width == _lastBounds.Width && r.Height == _lastBounds.Height;
+        _ticksSinceTopmost++;
+        if (unchanged && _ticksSinceTopmost < 60) return;
+
+        _lastBounds = r;
+        _haveLastBounds = true;
+        _ticksSinceTopmost = 0;
         SetWindowPos(Handle, HWND_TOPMOST, r.Left, r.Top, r.Width, r.Height, SWP_NOACTIVATE);
     }
 
@@ -80,7 +97,15 @@ public sealed class OverlayWindow : IDisposable
         if (visible == Visible) return;
         Visible = visible;
         ShowWindow(Handle, visible ? SW_SHOWNOACTIVATE : SW_HIDE);
-        if (visible) SetWindowPos(Handle, HWND_TOPMOST, 0, 0, 0, 0, 0x1 | 0x2 | SWP_NOACTIVATE);
+        if (visible)
+        {
+            SetWindowPos(Handle, HWND_TOPMOST, 0, 0, 0, 0, 0x1 | 0x2 | SWP_NOACTIVATE);
+            _ticksSinceTopmost = 0;
+        }
+        else
+        {
+            _haveLastBounds = false;
+        }
     }
 
     public void Dispose()

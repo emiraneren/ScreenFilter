@@ -92,7 +92,7 @@ public sealed class CaptureEngine : IDisposable
         }
 
         _overlay.SetVisible(true);
-        if (_windowMode) _followTimer = new Timer(_ => Follow(), null, 0, 8);
+        if (_windowMode) _followTimer = new Timer(_ => Follow(), null, 0, 20);
     }
 
     /// <summary>Re-draws the last captured frame (a static screen delivers no new frames, so setting changes need this).</summary>
