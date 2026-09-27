@@ -495,6 +495,13 @@ public partial class MainWindow : Window
             SetStatus("status.error", StatusKind.Error, ex.Message);
         }
         UpdateModeUi();
+
+        // Once the filter is live, get our own window out of the Alt-Tab stack — otherwise it sits
+        // right behind the game in the MRU order and a real Alt+Tab can land you on our settings
+        // window (input-focused, but the game's still the thing drawn on screen) instead of whatever
+        // you actually meant to switch to.
+        bool isTest = App.Args.Any(a => a.StartsWith("--selftest") || a.StartsWith("--uishot"));
+        if (Running && !isTest) WindowState = WindowState.Minimized;
     }
 
     private void Stop()
@@ -863,6 +870,12 @@ public partial class MainWindow : Window
             var wIdx = Array.IndexOf(App.Args, "--window");
             var gIdx = Array.IndexOf(App.Args, "--game");
             _cfg.Mode = App.Args.Contains("--fast") ? CaptureMode.Fast : gIdx >= 0 ? CaptureMode.Game : wIdx >= 0 ? CaptureMode.Window : CaptureMode.Monitor;
+            // Keep the mode radio buttons in sync with the mode this harness just forced, the same way
+            // a real click on one of them would — otherwise the UI shows a stale mode while the engine
+            // underneath runs a different one.
+            _suppress = true;
+            (_cfg.Mode switch { CaptureMode.Fast => ModeFast, CaptureMode.Window => ModeWindow, CaptureMode.Game => ModeGame, _ => ModeMonitor }).IsChecked = true;
+            _suppress = false;
             var pIdx = Array.IndexOf(App.Args, "--preset");
             SelectPresetChip(_builtIn.First(p => p.Id == (pIdx >= 0 ? App.Args[pIdx + 1] : "competitive")));
             if (wIdx >= 0)
