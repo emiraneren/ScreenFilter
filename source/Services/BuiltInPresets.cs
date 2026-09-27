@@ -8,7 +8,7 @@ public static class BuiltInPresets
     [
         P("default", new FilterSettings()),
 
-        P("darkboost", new FilterSettings { DarkBoost = 0.55f, Contrast = 1.03f, Sharpen = 0.2f }),
+        P("darkboost", new FilterSettings { DarkBoost = 0.55f }),
 
         P("competitive", new FilterSettings
         {
