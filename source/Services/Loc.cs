@@ -113,6 +113,7 @@ public sealed class Loc : INotifyPropertyChanged
         ["s.targetrange"] = "Hue width",
         ["s.invert"] = "Invert colors",
         ["s.unsupported"] = "Not available in fast mode",
+        ["preset.fastwarn"] = "Not visible right now: {0} (this mode only supports plain color adjustments).",
 
 
         ["hotkeys.title"] = "HOTKEYS",
@@ -261,6 +262,7 @@ public sealed class Loc : INotifyPropertyChanged
         ["s.targetrange"] = "Ton genişliği",
         ["s.invert"] = "Renkleri ters çevir",
         ["s.unsupported"] = "Hızlı modda kullanılamaz",
+        ["preset.fastwarn"] = "Şu an görünmüyor: {0} (bu mod yalnızca düz renk ayarlarını destekler).",
 
 
         ["hotkeys.title"] = "KISAYOLLAR",

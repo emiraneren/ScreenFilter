@@ -21,6 +21,7 @@
         <SolidColorBrush x:Key="DangerBrush" Color="#F0645A"/>
         <SolidColorBrush x:Key="DangerSoftBrush" Color="#33171A"/>
         <SolidColorBrush x:Key="SuccessBrush" Color="#5FD79B"/>
+        <SolidColorBrush x:Key="WarningBrush" Color="#F0C24B"/>
 
         <Style TargetType="TextBlock">
             <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>

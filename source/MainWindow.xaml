@@ -112,7 +112,9 @@
                     </StackPanel>
                 </Grid>
                 <WrapPanel x:Name="PresetPanel"/>
-                <TextBlock x:Name="PresetDesc" Style="{StaticResource Muted}" Margin="2,0,0,10"/>
+                <TextBlock x:Name="PresetDesc" Style="{StaticResource Muted}" Margin="2,0,0,4"/>
+                <TextBlock x:Name="PresetWarning" Style="{StaticResource Muted}" Foreground="{StaticResource WarningBrush}"
+                           Margin="2,0,0,10" Visibility="Collapsed"/>
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="260"/>

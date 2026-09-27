@@ -271,6 +271,13 @@ public partial class MainWindow : Window
         var p = AllPresets.FirstOrDefault(x => x.Id == _cfg.LastPresetId);
         PresetDesc.Text = p?.Description ?? "";
         DeletePresetBtn.Visibility = p is { IsBuiltIn: false } ? Visibility.Visible : Visibility.Collapsed;
+
+        bool fast = _cfg.Mode is CaptureMode.Fast or CaptureMode.Game;
+        var missing = fast && p != null
+            ? _rows.Where(r => !r.FastSupported && r.IsNonDefault(p.Settings)).Select(r => r.Label).Distinct().ToList()
+            : [];
+        PresetWarning.Visibility = missing.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+        if (missing.Count > 0) PresetWarning.Text = Loc.F("preset.fastwarn", string.Join(", ", missing));
     }
 
     private void SelectPresetChip(Preset p)

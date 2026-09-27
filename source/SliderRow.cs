@@ -88,4 +88,9 @@ public sealed class SliderRow
         _slider.IsEnabled = !dimmed;
         Root.ToolTip = dimmed ? Loc.T("s.unsupported") : null;
     }
+
+    /// <summary>Whether the given settings ask for something other than this slider's resting/off value.</summary>
+    public bool IsNonDefault(FilterSettings s) => Math.Abs(_get(s) - _default) > 0.001f;
+
+    public string Label => Loc.T(_labelKey);
 }
