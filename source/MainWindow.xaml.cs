@@ -547,12 +547,16 @@ public partial class MainWindow : Window
         if (found == null) { SetStatus("game.notrunning", StatusKind.Neutral); return; }
 
         _watchedGameHwnd = found.Handle;
-        _gameFocusWatcher = new GameFocusWatcher(found.Handle, focused => Dispatcher.Invoke(() =>
+        // Applied directly on the watcher's own thread, not marshaled through the WPF Dispatcher —
+        // Dispatcher.Invoke would queue behind whatever the UI thread happens to be doing at that
+        // instant (layout, a pending timer tick, ...), and that queueing is exactly what made
+        // switching into the game feel like it lagged a beat before the filter caught up.
+        _gameFocusWatcher = new GameFocusWatcher(found.Handle, focused =>
         {
             _gameFocused = focused;
             if (!_fastActive) return;
             if (focused) MagnifierEffect.Apply(_cur); else MagnifierEffect.SetIdentity();
-        }));
+        });
         SetStatus("game.detected", StatusKind.Ok, found.Title);
     }
 
