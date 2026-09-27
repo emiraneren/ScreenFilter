@@ -541,7 +541,7 @@ public partial class MainWindow : Window
         _gameFocusWatcher?.Dispose();
         _gameFocusWatcher = null;
         _watchedGameHwnd = IntPtr.Zero;
-        MagnifierEffect.SetIdentity();
+        MagnifierEffect.Reset();
 
         var found = Sources.FindGameWindow(_cfg.GameProcessName!);
         if (found == null) { SetStatus("game.notrunning", StatusKind.Neutral); return; }
@@ -555,7 +555,7 @@ public partial class MainWindow : Window
         {
             _gameFocused = focused;
             if (!_fastActive) return;
-            if (focused) MagnifierEffect.Apply(_cur); else MagnifierEffect.SetIdentity();
+            if (focused) MagnifierEffect.Apply(_cur); else MagnifierEffect.Reset();
         });
         SetStatus("game.detected", StatusKind.Ok, found.Title);
     }
