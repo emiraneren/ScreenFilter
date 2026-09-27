@@ -17,6 +17,9 @@ public static class Native
     public const uint WM_DESTROY = 2, WM_QUIT = 0x12, WM_HOTKEY = 0x312;
     public const uint MOD_ALT = 1, MOD_CONTROL = 2, MOD_NOREPEAT = 0x4000;
 
+    public const uint EVENT_SYSTEM_FOREGROUND = 0x0003, EVENT_SYSTEM_MINIMIZESTART = 0x0016, EVENT_SYSTEM_MINIMIZEEND = 0x0017;
+    public const uint WINEVENT_OUTOFCONTEXT = 0, WINEVENT_SKIPOWNPROCESS = 2;
+
     public static readonly IntPtr HWND_TOPMOST = new(-1);
 
     [StructLayout(LayoutKind.Sequential)]
@@ -45,6 +48,10 @@ public static class Native
 
     public delegate IntPtr WndProc(IntPtr hwnd, uint msg, IntPtr wParam, IntPtr lParam);
     public delegate bool EnumWindowsProc(IntPtr hwnd, IntPtr lParam);
+    public delegate void WinEventDelegate(IntPtr hWinEventHook, uint eventType, IntPtr hwnd, int idObject, int idChild, uint dwEventThread, uint dwmsEventTime);
+
+    [DllImport("user32.dll")] public static extern IntPtr SetWinEventHook(uint eventMin, uint eventMax, IntPtr hmodWinEventProc, WinEventDelegate lpfnWinEventProc, uint idProcess, uint idThread, uint dwFlags);
+    [DllImport("user32.dll")] public static extern bool UnhookWinEvent(IntPtr hWinEventHook);
     public delegate bool MonitorEnumProc(IntPtr hMonitor, IntPtr hdc, ref RECT rect, IntPtr lParam);
 
     [DllImport("user32.dll", CharSet = CharSet.Unicode)] public static extern ushort RegisterClassEx(ref WNDCLASSEX wc);

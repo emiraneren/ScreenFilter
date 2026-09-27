@@ -22,14 +22,18 @@ public sealed class OverlayWindow : IDisposable
     private RECT _lastBounds;
     private bool _haveLastBounds;
     private int _ticksSinceTopmost;
+    private readonly Action? _onForegroundOrMinimizeChanged;
+    private WinEventDelegate? _winEventProc;
+    private IntPtr _hookForeground, _hookMinimize;
 
     public IntPtr Handle { get; private set; }
     public bool Visible { get; private set; }
 
-    public OverlayWindow(RECT bounds, bool excludeFromCapture)
+    public OverlayWindow(RECT bounds, bool excludeFromCapture, Action? onForegroundOrMinimizeChanged = null)
     {
         _initial = bounds;
         _excludeFromCapture = excludeFromCapture;
+        _onForegroundOrMinimizeChanged = onForegroundOrMinimizeChanged;
         _thread = new Thread(Run) { IsBackground = true, Name = "ScreenFilter overlay" };
         _thread.SetApartmentState(ApartmentState.STA);
         _thread.Start();
@@ -63,6 +67,20 @@ public sealed class OverlayWindow : IDisposable
             SetLayeredWindowAttributes(Handle, 0, 255, LWA_ALPHA);
             if (_excludeFromCapture) SetWindowDisplayAffinity(Handle, WDA_EXCLUDEFROMCAPTURE);
         }
+
+        // React to the real OS focus-change event instead of only a poll, so switching back to the
+        // game shows the filter within a couple ms instead of waiting for the next timer tick.
+        if (_onForegroundOrMinimizeChanged != null)
+        {
+            _winEventProc = (_, eventType, hwnd, idObject, _, _, _) =>
+            {
+                if (idObject != 0) return;
+                _onForegroundOrMinimizeChanged();
+            };
+            _hookForeground = SetWinEventHook(EVENT_SYSTEM_FOREGROUND, EVENT_SYSTEM_FOREGROUND, IntPtr.Zero, _winEventProc, 0, 0, WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS);
+            _hookMinimize = SetWinEventHook(EVENT_SYSTEM_MINIMIZESTART, EVENT_SYSTEM_MINIMIZEEND, IntPtr.Zero, _winEventProc, 0, 0, WINEVENT_OUTOFCONTEXT | WINEVENT_SKIPOWNPROCESS);
+        }
+
         _ready.Set();
         if (Handle == IntPtr.Zero) return;
 
@@ -71,6 +89,9 @@ public sealed class OverlayWindow : IDisposable
             TranslateMessage(ref msg);
             DispatchMessage(ref msg);
         }
+
+        if (_hookForeground != IntPtr.Zero) UnhookWinEvent(_hookForeground);
+        if (_hookMinimize != IntPtr.Zero) UnhookWinEvent(_hookMinimize);
     }
 
     /// <summary>

@@ -76,7 +76,10 @@ public sealed class CaptureEngine : IDisposable
         _height = Math.Max(bounds.Height, 16);
 
         // Overlay must be excluded from capture when capturing a monitor, otherwise it would capture itself.
-        _overlay = new OverlayWindow(Inset(bounds), excludeFromCapture || !_windowMode);
+        // The event hook makes alt-tab back into the game show the filter within a couple ms instead of
+        // waiting for the next poll; the timer below stays as a slower fallback (position tracking, and
+        // in case the hook ever misses an event).
+        _overlay = new OverlayWindow(Inset(bounds), excludeFromCapture || !_windowMode, _windowMode ? Follow : null);
 
         try
         {
