@@ -761,6 +761,9 @@ public partial class MainWindow : Window
                 result = ok ? $"OK fps={fps}" : "SNAPSHOT TIMEOUT";
             }
             File.WriteAllText(outPath + ".txt", result);
+
+            var holdIdx = Array.IndexOf(App.Args, "--holdms");
+            if (holdIdx >= 0) await Task.Delay(int.Parse(App.Args[holdIdx + 1]));
         }
         catch (Exception ex) { File.WriteAllText(outPath + ".txt", ex.ToString()); }
         finally { ExitApp(); }
