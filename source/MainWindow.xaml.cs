@@ -760,10 +760,33 @@ public partial class MainWindow : Window
                 bool ok = await Task.Run(() => engine.SaveSnapshot(outPath));
                 result = ok ? $"OK fps={fps}" : "SNAPSHOT TIMEOUT";
             }
-            File.WriteAllText(outPath + ".txt", result);
-
             var holdIdx = Array.IndexOf(App.Args, "--holdms");
-            if (holdIdx >= 0) await Task.Delay(int.Parse(App.Args[holdIdx + 1]));
+            if (holdIdx >= 0)
+            {
+                await Task.Delay(int.Parse(App.Args[holdIdx + 1]));
+                long f1 = _engine?.FrameCount ?? 0; await Task.Delay(1000); double fps2 = ((_engine?.FrameCount ?? 0) - f1);
+                result += $" afterHold_fps={fps2} running={Running} status='{StatusText.Text}'";
+                if (_engine != null) await Task.Run(() => _engine.SaveSnapshot(outPath + "_end.png"));
+            }
+
+            var toggleIdx = Array.IndexOf(App.Args, "--togglecount");
+            if (toggleIdx >= 0)
+            {
+                int n = int.Parse(App.Args[toggleIdx + 1]);
+                for (int i = 0; i < n; i++)
+                {
+                    await Task.Delay(400);
+                    Stop();
+                    if (Running) { result += $" TOGGLE-FAIL-STILLRUNNING@{i}"; break; }
+                    await Task.Delay(400);
+                    Start();
+                    if (!Running) { result += $" TOGGLE-FAIL-NOTSTARTED@{i} status='{StatusText.Text}'"; break; }
+                }
+                result += $" afterToggles running={Running} frames={_engine?.FrameCount ?? -1} status='{StatusText.Text}'";
+                await Task.Delay(2000);
+                result += $" +2s frames={_engine?.FrameCount ?? -1}";
+            }
+            File.WriteAllText(outPath + ".txt", result);
         }
         catch (Exception ex) { File.WriteAllText(outPath + ".txt", ex.ToString()); }
         finally { ExitApp(); }
