@@ -121,6 +121,9 @@ public partial class MainWindow : Window
         Add(DetailPanel, "s.clarity", 0f, 1f, 0f, "0.00", false, s => s.Clarity, (s, v) => s.Clarity = v);
         Add(DetailPanel, "s.dehaze", 0f, 1f, 0f, "0.00", false, s => s.Dehaze, (s, v) => s.Dehaze = v);
 
+        Add(FilmPanel, "s.vignette", 0f, 1f, 0f, "0.00", false, s => s.Vignette, (s, v) => s.Vignette = v);
+        Add(FilmPanel, "s.grain", 0f, 1f, 0f, "0.00", false, s => s.Grain, (s, v) => s.Grain = v);
+
         Add(TargetPanel, "s.targetamount", 0f, 1f, 0f, "0.00", false, s => s.TargetAmount, (s, v) => s.TargetAmount = v);
         Add(TargetPanel, "s.targethue", 0f, 360f, 0f, "0'°'", false, s => s.TargetHue, (s, v) => s.TargetHue = v, rainbow);
         Add(TargetPanel, "s.targetrange", 5f, 90f, 30f, "0'°'", false, s => s.TargetRange, (s, v) => s.TargetRange = v);
@@ -737,7 +740,8 @@ public partial class MainWindow : Window
         {
             var wIdx = Array.IndexOf(App.Args, "--window");
             _cfg.Mode = App.Args.Contains("--fast") ? CaptureMode.Fast : wIdx >= 0 ? CaptureMode.Window : CaptureMode.Monitor;
-            SelectPresetChip(_builtIn.First(p => p.Id == "competitive"));
+            var pIdx = Array.IndexOf(App.Args, "--preset");
+            SelectPresetChip(_builtIn.First(p => p.Id == (pIdx >= 0 ? App.Args[pIdx + 1] : "competitive")));
             if (wIdx >= 0)
             {
                 var wanted = App.Args[wIdx + 1];

@@ -14,7 +14,8 @@ cbuffer P : register(b0)
     float4 P0;   // gamma, shadowLift, highlights, vibrance
     float4 P1;   // sharpen, clarity, dehaze, targetAmount
     float4 P2;   // targetHue (0..1), targetRange (0..0.5), texel.x, texel.y
-    float4 P3;   // darkBoost, -, -, -
+    float4 P3;   // darkBoost, outUv.x, outUv.y, -
+    float4 P4;   // vignette, grain, grainSeed, -
 };
 
 struct VSOut { float4 pos : SV_Position; float2 uv : TEXCOORD0; };
@@ -117,6 +118,21 @@ float4 PS(VSOut i) : SV_Target
         hsv.y = saturate(hsv.y * (1.0 + w * a * 0.9) * (1.0 - 0.45 * a * (1.0 - w)));
         hsv.z = saturate(hsv.z * (1.0 + w * a * 0.45) * (1.0 - 0.18 * a * (1.0 - w)));
         o = HsvToRgb(hsv);
+    }
+
+    if (P4.x > 0.001)
+    {
+        float2 centered = i.uv - 0.5;
+        centered.x *= P4.w;
+        float d = length(centered) * 1.35;
+        float fall = smoothstep(0.35, 1.05, d);
+        o *= 1.0 - P4.x * fall * 0.85;
+    }
+
+    if (P4.y > 0.001)
+    {
+        float n = frac(sin(dot(i.pos.xy + P4.z, float2(12.9898, 78.233))) * 43758.5453);
+        o += (n - 0.5) * P4.y * 0.22;
     }
 
     return float4(saturate(o), 1.0);

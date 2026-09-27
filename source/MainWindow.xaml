@@ -166,6 +166,13 @@
                     </Border>
                     <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="20,16,20,6" Margin="0,0,0,14">
                         <StackPanel>
+                            <TextBlock Text="{s:Loc sec.film}" Style="{StaticResource Caption}" Margin="0,0,0,6"/>
+                            <TextBlock Text="{s:Loc sec.film.desc}" Style="{StaticResource Muted}" Margin="0,0,0,12"/>
+                            <WrapPanel x:Name="FilmPanel"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Background="{StaticResource SurfaceBrush}" BorderBrush="{StaticResource BorderBrush}" BorderThickness="1" CornerRadius="10" Padding="20,16,20,6" Margin="0,0,0,14">
+                        <StackPanel>
                             <TextBlock Text="{s:Loc sec.target}" Style="{StaticResource Caption}" Margin="0,0,0,6"/>
                             <TextBlock Text="{s:Loc sec.target.desc}" Style="{StaticResource Muted}" Margin="0,0,0,12"/>
                             <WrapPanel x:Name="TargetPanel"/>

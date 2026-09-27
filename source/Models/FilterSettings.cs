@@ -30,6 +30,9 @@ public class FilterSettings
     public float TargetHue { get; set; }
     public float TargetRange { get; set; } = 30f;
 
+    public float Vignette { get; set; }
+    public float Grain { get; set; }
+
     public FilterSettings Clone() => (FilterSettings)MemberwiseClone();
 
     public void CopyFrom(FilterSettings o)

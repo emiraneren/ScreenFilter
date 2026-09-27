@@ -54,7 +54,8 @@ public sealed class CaptureEngine : IDisposable
     private string? _snapshotPath;
     private readonly ManualResetEventSlim _snapshotDone = new();
 
-    private volatile float[] _constants = new float[28];
+    private volatile float[] _constants = new float[32];
+    private int _grainFrame;
     private long _frameCount;
 
     public long FrameCount => Interlocked.Read(ref _frameCount);
@@ -117,6 +118,7 @@ public sealed class CaptureEngine : IDisposable
             s.Sharpen, s.Clarity, s.Dehaze, s.TargetAmount,
             target, Math.Clamp(s.TargetRange / 360f, 0.005f, 0.5f), 0f, 0f,
             s.DarkBoost, 0f, 0f, 0f,
+            s.Vignette, s.Grain, 0f, 0f,
         ];
         if (redraw) Redraw();
     }
@@ -140,7 +142,7 @@ public sealed class CaptureEngine : IDisposable
         _ps = _device.CreatePixelShader(Compile("PS", "ps_5_0"));
         _sampler = _device.CreateSamplerState(new SamplerDescription(Filter.MinMagMipLinear,
             TextureAddressMode.Clamp, TextureAddressMode.Clamp, TextureAddressMode.Clamp));
-        _cb = _device.CreateBuffer(new BufferDescription(28 * sizeof(float), BindFlags.ConstantBuffer, ResourceUsage.Dynamic, CpuAccessFlags.Write));
+        _cb = _device.CreateBuffer(new BufferDescription(32 * sizeof(float), BindFlags.ConstantBuffer, ResourceUsage.Dynamic, CpuAccessFlags.Write));
     }
 
     private static byte[] Compile(string entry, string profile)
@@ -316,6 +318,8 @@ public sealed class CaptureEngine : IDisposable
         c[23] = 1f / _height;
         c[25] = OutW / (float)_width;
         c[26] = OutH / (float)_height;
+        c[30] = (_grainFrame++ % 1000) * 7.3421f;
+        c[31] = OutW / (float)OutH;
         Marshal.Copy(c, 0, mapped.DataPointer, c.Length);
         _ctx.Unmap(_cb, 0);
 

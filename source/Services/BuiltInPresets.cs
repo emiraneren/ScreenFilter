@@ -56,6 +56,12 @@ public static class BuiltInPresets
             Contrast = 1.15f, Sharpen = 0.4f, Saturation = 0.8f,
         }),
 
+        P("filmmode", new FilterSettings
+        {
+            Temperature = 0.22f, Tint = -0.04f, Saturation = 0.82f, Contrast = 1.16f,
+            Highlights = 0.18f, Vignette = 0.4f, Grain = 0.22f, Sharpen = 0.15f,
+        }),
+
         P("cinematic", new FilterSettings
         {
             Temperature = 0.25f, Tint = -0.05f, Saturation = 0.85f, Contrast = 1.18f,
