@@ -5,7 +5,7 @@ using ScreenFilter.Models;
 
 namespace ScreenFilter.Services;
 
-public enum CaptureMode { Fast, Monitor, Window }
+public enum CaptureMode { Fast, Monitor, Window, Game }
 
 public class AppConfig
 {
@@ -18,6 +18,8 @@ public class AppConfig
     public bool ExcludeFromCapture { get; set; } = true;
     public bool KeepInTrayOnClose { get; set; } = false;
     public bool SimpleView { get; set; } = true;
+    public string? GameProcessName { get; set; }
+    public string? GameWindowTitle { get; set; }
     public FilterSettings Current { get; set; } = new();
     public List<Preset> CustomPresets { get; set; } = [];
 }

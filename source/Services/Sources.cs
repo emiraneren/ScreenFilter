@@ -46,4 +46,20 @@ public static class Sources
         }, IntPtr.Zero);
         return list;
     }
+
+    /// <summary>Re-finds a previously picked game by its process name (e.g. "HuntGame"), for the Oyun tab's auto-detect.</summary>
+    public static WindowSource? FindGameWindow(string processName)
+    {
+        try
+        {
+            foreach (var p in System.Diagnostics.Process.GetProcessesByName(processName))
+            {
+                var h = p.MainWindowHandle;
+                if (h == IntPtr.Zero || !IsWindowVisible(h)) continue;
+                return new WindowSource(h, p.MainWindowTitle.Length > 0 ? p.MainWindowTitle : processName, (uint)p.Id);
+            }
+        }
+        catch { /* process may have exited mid-lookup */ }
+        return null;
+    }
 }

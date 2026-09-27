@@ -40,7 +40,17 @@
                     <RadioButton x:Name="ModeFast" GroupName="mode" Style="{StaticResource ModeCard}" Content="{s:Loc mode.fast}" Tag="Fast" Checked="Mode_Checked"/>
                     <RadioButton x:Name="ModeMonitor" GroupName="mode" Style="{StaticResource ModeCard}" Content="{s:Loc mode.monitor}" Tag="Monitor" Checked="Mode_Checked"/>
                     <RadioButton x:Name="ModeWindow" GroupName="mode" Style="{StaticResource ModeCard}" Content="{s:Loc mode.window}" Tag="Window" Checked="Mode_Checked"/>
+                    <RadioButton x:Name="ModeGame" GroupName="mode" Style="{StaticResource ModeCard}" Content="{s:Loc mode.game}" Tag="Game" Checked="Mode_Checked"/>
                     <TextBlock x:Name="ModeDesc" Style="{StaticResource Muted}" Margin="2,2,2,16"/>
+
+                    <StackPanel x:Name="GamePanel">
+                        <TextBlock x:Name="GameStatusText" Style="{StaticResource Muted}" Margin="2,0,2,10" TextWrapping="Wrap"/>
+                        <ComboBox x:Name="GamePickCombo" SelectionChanged="GamePickCombo_SelectionChanged"/>
+                        <Grid Margin="0,8,0,18">
+                            <Button x:Name="GameChangeBtn" Content="{s:Loc game.change}" Style="{StaticResource GhostButton}" HorizontalAlignment="Left" Click="GameChange_Click"/>
+                            <Button x:Name="GameRefreshBtn" Content="⟳" Style="{StaticResource GhostButton}" Width="40" FontSize="16" HorizontalAlignment="Right" Click="Refresh_Click" ToolTip="{s:Loc source.refresh}"/>
+                        </Grid>
+                    </StackPanel>
 
                     <StackPanel x:Name="SourcePanel">
                         <TextBlock x:Name="SourceLabel" Style="{StaticResource Caption}" Margin="0,0,0,8"/>

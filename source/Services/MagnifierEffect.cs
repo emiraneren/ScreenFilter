@@ -30,13 +30,20 @@ public static class MagnifierEffect
         return Native.MagSetFullscreenColorEffect(ref effect);
     }
 
-    public static void Reset()
+    /// <summary>Turns the color effect off without tearing down the Magnification session (cheap; used to flip on/off as the target game gains/loses focus).</summary>
+    public static void SetIdentity()
     {
         if (!_initialized) return;
         var id = new float[25];
         for (int i = 0; i < 5; i++) id[i * 5 + i] = 1f;
         var effect = new Native.MAGCOLOREFFECT { transform = id };
         Native.MagSetFullscreenColorEffect(ref effect);
+    }
+
+    public static void Reset()
+    {
+        if (!_initialized) return;
+        SetIdentity();
         Native.MagUninitialize();
         _initialized = false;
     }

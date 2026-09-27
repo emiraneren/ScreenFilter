@@ -23,6 +23,10 @@ public partial class MainWindow : Window
 
     private CaptureEngine? _engine;
     private bool _fastActive;
+    private GameFocusWatcher? _gameFocusWatcher;
+    private DispatcherTimer? _gameWaitTimer;
+    private IntPtr _watchedGameHwnd;
+    private bool _gameFocused;
     private bool _exiting;
     private bool _suppress;
     private long _lastFrames;
@@ -45,7 +49,7 @@ public partial class MainWindow : Window
 
         _suppress = true;
         (_cfg.Language == "tr" ? LangTr : LangEn).IsChecked = true;
-        (_cfg.Mode switch { CaptureMode.Fast => ModeFast, CaptureMode.Window => ModeWindow, _ => ModeMonitor }).IsChecked = true;
+        (_cfg.Mode switch { CaptureMode.Fast => ModeFast, CaptureMode.Window => ModeWindow, CaptureMode.Game => ModeGame, _ => ModeMonitor }).IsChecked = true;
         OptForeground.IsChecked = _cfg.OnlyWhenForeground;
         OptExclude.IsChecked = _cfg.ExcludeFromCapture;
         OptTray.IsChecked = _cfg.KeepInTrayOnClose;
@@ -56,6 +60,7 @@ public partial class MainWindow : Window
         ApplyView();
         RefreshAll();
         RefreshSources();
+        RefreshGamePanel();
         UpdateModeUi();
         SetStatus("status.off");
 
@@ -209,7 +214,7 @@ public partial class MainWindow : Window
 
     private void UpdateDimming()
     {
-        bool fast = _cfg.Mode == CaptureMode.Fast;
+        bool fast = _cfg.Mode is CaptureMode.Fast or CaptureMode.Game;
         foreach (var r in _rows) r.SetDimmed(fast && !r.FastSupported);
     }
 
@@ -322,6 +327,7 @@ public partial class MainWindow : Window
         if (_suppress || sender is not RadioButton { Tag: string tag }) return;
         _cfg.Mode = Enum.Parse<CaptureMode>(tag);
         RefreshSources();
+        RefreshGamePanel();
         UpdateModeUi();
         UpdateDimming();
         ScheduleSave();
@@ -330,8 +336,9 @@ public partial class MainWindow : Window
 
     private void UpdateModeUi()
     {
-        ModeDesc.Text = Loc.T(_cfg.Mode switch { CaptureMode.Fast => "mode.fast.desc", CaptureMode.Window => "mode.window.desc", _ => "mode.monitor.desc" });
-        SourcePanel.Visibility = _cfg.Mode == CaptureMode.Fast ? Visibility.Collapsed : Visibility.Visible;
+        ModeDesc.Text = Loc.T(_cfg.Mode switch { CaptureMode.Fast => "mode.fast.desc", CaptureMode.Window => "mode.window.desc", CaptureMode.Game => "mode.game.desc", _ => "mode.monitor.desc" });
+        SourcePanel.Visibility = _cfg.Mode is CaptureMode.Fast or CaptureMode.Game ? Visibility.Collapsed : Visibility.Visible;
+        GamePanel.Visibility = _cfg.Mode == CaptureMode.Game ? Visibility.Visible : Visibility.Collapsed;
         SourceLabel.Text = Loc.T(_cfg.Mode == CaptureMode.Window ? "source.window" : "source.monitor").ToUpperInvariant();
         OptForeground.Visibility = _cfg.Mode == CaptureMode.Window ? Visibility.Visible : Visibility.Collapsed;
         OptExclude.Visibility = _cfg.Mode == CaptureMode.Window ? Visibility.Visible : Visibility.Collapsed;
@@ -341,7 +348,7 @@ public partial class MainWindow : Window
 
     private void RefreshSources()
     {
-        if (_cfg.Mode == CaptureMode.Fast) return;
+        if (_cfg.Mode is CaptureMode.Fast or CaptureMode.Game) return;
         object? previous = SourceCombo.SelectedItem;
         SourceCombo.Items.Clear();
         if (_cfg.Mode == CaptureMode.Monitor)
@@ -358,7 +365,54 @@ public partial class MainWindow : Window
         }
     }
 
-    private void Refresh_Click(object sender, RoutedEventArgs e) => RefreshSources();
+    private void RefreshGamePanel()
+    {
+        if (_cfg.Mode != CaptureMode.Game) return;
+        bool hasSaved = !string.IsNullOrEmpty(_cfg.GameProcessName);
+        GamePickCombo.Visibility = hasSaved ? Visibility.Collapsed : Visibility.Visible;
+        GameChangeBtn.Visibility = hasSaved ? Visibility.Visible : Visibility.Collapsed;
+
+        if (!hasSaved)
+        {
+            GameStatusText.Text = Loc.T("game.pick") + " — " + Loc.T("game.pick.hint");
+            GamePickCombo.Items.Clear();
+            foreach (var w in Sources.Windows(_hwnd)) GamePickCombo.Items.Add(w);
+            return;
+        }
+
+        var found = Sources.FindGameWindow(_cfg.GameProcessName!);
+        GameStatusText.Text = found != null ? Loc.F("game.detected", found.Title) : Loc.T("game.notrunning");
+    }
+
+    private void GamePickCombo_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_suppress || GamePickCombo.SelectedItem is not WindowSource win) return;
+        try
+        {
+            using var p = System.Diagnostics.Process.GetProcessById((int)win.ProcessId);
+            _cfg.GameProcessName = p.ProcessName;
+        }
+        catch { return; }
+        _cfg.GameWindowTitle = win.Title;
+        ScheduleSave();
+        RefreshGamePanel();
+        if (Running) Start();
+    }
+
+    private void GameChange_Click(object sender, RoutedEventArgs e)
+    {
+        _cfg.GameProcessName = null;
+        _cfg.GameWindowTitle = null;
+        ScheduleSave();
+        if (Running) Stop();
+        RefreshGamePanel();
+    }
+
+    private void Refresh_Click(object sender, RoutedEventArgs e)
+    {
+        RefreshSources();
+        RefreshGamePanel();
+    }
 
     private void SourceCombo_SelectionChanged(object sender, SelectionChangedEventArgs e) { }
 
@@ -383,6 +437,12 @@ public partial class MainWindow : Window
                     if (!MagnifierEffect.Apply(_cur)) throw new InvalidOperationException("Magnification API");
                     _fastActive = true;
                     SetStatus("status.on.fast", StatusKind.Ok);
+                    break;
+
+                case CaptureMode.Game:
+                    if (string.IsNullOrEmpty(_cfg.GameProcessName)) { SetStatus("game.pick", StatusKind.Error); return; }
+                    _fastActive = true;
+                    StartGameWatch();
                     break;
 
                 case CaptureMode.Monitor:
@@ -435,16 +495,65 @@ public partial class MainWindow : Window
         var engine = _engine;
         _engine = null;
         engine?.Dispose();
+        StopGameWatch();
         if (_fastActive) { MagnifierEffect.Reset(); _fastActive = false; }
         FpsText.Text = "";
-        if (_statusKey.StartsWith("status.on")) SetStatus("status.off");
+        if (_statusKey.StartsWith("status.on") || _statusKey.StartsWith("game.")) SetStatus("status.off");
         UpdateModeUi();
     }
 
     private void ApplyLive()
     {
-        if (_fastActive) MagnifierEffect.Apply(_cur);
+        if (_fastActive)
+        {
+            if (_cfg.Mode != CaptureMode.Game || _gameFocused) MagnifierEffect.Apply(_cur);
+        }
         else _engine?.UpdateSettings(_cur);
+    }
+
+    /// <summary>
+    /// Polls for the remembered game every 2s (cheap: just IsWindow once attached) so "Oyun" mode can
+    /// start before the game is even open, and re-detect it if it's closed and relaunched.
+    /// </summary>
+    private void StartGameWatch()
+    {
+        StopGameWatch();
+        _gameWaitTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(2) };
+        _gameWaitTimer.Tick += (_, _) => PollGameWindow();
+        PollGameWindow();
+        _gameWaitTimer.Start();
+    }
+
+    private void StopGameWatch()
+    {
+        _gameWaitTimer?.Stop();
+        _gameWaitTimer = null;
+        _gameFocusWatcher?.Dispose();
+        _gameFocusWatcher = null;
+        _watchedGameHwnd = IntPtr.Zero;
+        _gameFocused = false;
+    }
+
+    private void PollGameWindow()
+    {
+        if (_watchedGameHwnd != IntPtr.Zero && Native.IsWindow(_watchedGameHwnd)) return;
+
+        _gameFocusWatcher?.Dispose();
+        _gameFocusWatcher = null;
+        _watchedGameHwnd = IntPtr.Zero;
+        MagnifierEffect.SetIdentity();
+
+        var found = Sources.FindGameWindow(_cfg.GameProcessName!);
+        if (found == null) { SetStatus("game.notrunning", StatusKind.Neutral); return; }
+
+        _watchedGameHwnd = found.Handle;
+        _gameFocusWatcher = new GameFocusWatcher(found.Handle, focused => Dispatcher.Invoke(() =>
+        {
+            _gameFocused = focused;
+            if (!_fastActive) return;
+            if (focused) MagnifierEffect.Apply(_cur); else MagnifierEffect.SetIdentity();
+        }));
+        SetStatus("game.detected", StatusKind.Ok, found.Title);
     }
 
     private void UpdateFps()
@@ -492,6 +601,7 @@ public partial class MainWindow : Window
         if (_hwnd != IntPtr.Zero) BuildHotkeyPanel();
         BuildPresetChips();
         UpdateModeUi();
+        RefreshGamePanel();
         UpdateDimming();
         StatusText.Text = Loc.F(_statusKey, _statusArgs);
         if (_tray != null) BuildTrayMenu();
@@ -611,6 +721,7 @@ public partial class MainWindow : Window
         BuildHotkeyPanel();
         RegisterAll();
         RefreshSources();
+        RefreshGamePanel();
     }
 
     private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
@@ -739,7 +850,8 @@ public partial class MainWindow : Window
         try
         {
             var wIdx = Array.IndexOf(App.Args, "--window");
-            _cfg.Mode = App.Args.Contains("--fast") ? CaptureMode.Fast : wIdx >= 0 ? CaptureMode.Window : CaptureMode.Monitor;
+            var gIdx = Array.IndexOf(App.Args, "--game");
+            _cfg.Mode = App.Args.Contains("--fast") ? CaptureMode.Fast : gIdx >= 0 ? CaptureMode.Game : wIdx >= 0 ? CaptureMode.Window : CaptureMode.Monitor;
             var pIdx = Array.IndexOf(App.Args, "--preset");
             SelectPresetChip(_builtIn.First(p => p.Id == (pIdx >= 0 ? App.Args[pIdx + 1] : "competitive")));
             if (wIdx >= 0)
@@ -750,6 +862,7 @@ public partial class MainWindow : Window
                 RefreshSources();
                 SourceCombo.SelectedItem = SourceCombo.Items.OfType<WindowSource>().First(w => w.Handle == win.Handle);
             }
+            if (gIdx >= 0) _cfg.GameProcessName = App.Args[gIdx + 1];
             Start();
             if (_engine == null && !_fastActive) throw new InvalidOperationException(StatusText.Text);
             await Task.Delay(1000); long f0 = _engine?.FrameCount ?? 0; await Task.Delay(2000); double fps = ((_engine?.FrameCount ?? 0) - f0) / 2.0;
